@@ -25,13 +25,13 @@ fprintf('Loading Systems\n');
 location_1 = [0; 0; 0];
 location_2 = [-1; -0.5; 0];
 location_3 = [-1.5; -0.25; 0];
-[System1, SInfo1] = UAV_System(lambda, epsilon, 1);%Manipulator_System(lambda, epsilon,location_1, 1);
+[System1, SInfo1] = Manipulator_System(lambda, epsilon, location_1, 1);%Manipulator_System(lambda, epsilon,location_1, 1);
 [System2, SInfo2] = Manipulator_System(lambda, epsilon, location_2, 2);
 %[System3, SInfo3] = UAV_System(lambda, epsilon, 3);
 % Initial conditions
 q01 = zeros(SInfo1.n, 1); p01 = zeros(SInfo1.n, 1);
 q02 = zeros(SInfo2.n, 1); p02 = zeros(SInfo2.n, 1);
-%q01 = [1.2; -0.4; 0.6];
+q02 = [0.4; -0.2; 0.6];
 % q03 = zeros(SInfo3.n, 1); p03 = zeros(SInfo3.n, 1);
 % q03 = [-0.5; -0.5; 0.6];
 
@@ -72,7 +72,7 @@ Simulation.R = Simulation.Formation_Goal*System1.lambda/2;
 Vr0 = 0;
 %% Simulation Parameters
 % Time parameters
-dt = 0.1; t_out = 0:dt:Simulation.duration;
+dt = 0.05; t_out = 0:dt:Simulation.duration;
 set_param(model, 'StopTime', num2str(Simulation.duration))
 
 fprintf('Parameters set\n');

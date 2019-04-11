@@ -145,7 +145,7 @@ if(algorithm == 1)
    % System.Kv = @(q, qdot) lambda*eye(3);
    % -> Kv modifies the "matching" condition while tau does not.
    % gain Here helps ONLY in thediscrete case!!!0.1*
-    System.Kv = @(q, qdot) lambda*eye(3)+0.5*System.qdotM(q, qdot);
+    System.Kv = @(q, qdot) lambda*eye(3)-0.5*System.qdotM(q, qdot);
    %System.Psi(q)*inv(System.Psi(q)'*System.Psi(q) + System.epsilon*eye(2))*...
      %System.dPsi(q, qdot)'*System.M(q)-...
    %ValidateLProof;

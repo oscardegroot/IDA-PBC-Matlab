@@ -1,9 +1,9 @@
-function [V, Vdot] = R_Validation(q, qdot, p, pdot, r, tau, index)
+function [V, Vdot, Vcomp] = R_Validation(q, qdot, p, pdot, r, tau, index)
 
     load(['Systems/Manipulator3_n' num2str(index)], 'System');
      
     V = System.R(q, r);
-    
+    Vcomp = tau'*System.epsilon*inv(System.Psi(q)'*System.Psi(q) + System.epsilon*eye(2))*r;
     % dPsi?
     rdot = System.dPsi(q, qdot)'*p + System.Psi(q)'*pdot +...
         System.lambda*System.Psi(q)'*qdot;% + ...

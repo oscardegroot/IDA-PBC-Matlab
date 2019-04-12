@@ -1,14 +1,14 @@
+%% Animate simulated systems
 function Animate(qdata, Simulation, t_out)
     Nsteps = size(qdata.Data, 1);
     
     % Time is slowed down by this rate
-    time_rate = 1;
+    time_rate = Simulation.time_rate;
     
     %% Format data
     y_all = {};
     col_start = 1;
     for i = 1 : Simulation.N
-        %N = size(qdata.Data, 2) / 2;
         col_end = col_start + Simulation.systems{i}.n;
         y_all{i} = qdata.Data(:, col_start:col_end-1);
         col_start = col_end;
@@ -18,10 +18,9 @@ function Animate(qdata, Simulation, t_out)
     Tstep = Tstep / time_rate;
     t = t_out;
     
-    %% Draw
+    %% Draw the animation
     figure;
-    waitforbuttonpress;
-    pause(1);
+    waitforbuttonpress; pause(1);
     if(Simulation.life_animation)
     
         for i = 1 : Nsteps
@@ -31,7 +30,7 @@ function Animate(qdata, Simulation, t_out)
                 Simulation.systems{j}.plotf(y(i, :), Simulation.colors{j}, Simulation.systems{j});
             end
             title(['T = ' num2str(floor(t(i)))]);
-            wsize = 2;
+            wsize = Simulation.window_size;
             woffset = [0; 0];
             xlim([woffset(1)-wsize, wsize+ woffset(1)]);
             ylim([woffset(2)-wsize, wsize+ woffset(2)]);

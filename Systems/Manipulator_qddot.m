@@ -1,3 +1,4 @@
+% Not used
 function [qddot]  = Manipulator_qddot(q, p, qdot, pdot, index)
 
     load(['Systems/Manipulator3_n' num2str(index)], 'System');

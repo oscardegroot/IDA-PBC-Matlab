@@ -1,3 +1,4 @@
+%% Calculate ddt of a system with 3 coordinates and return it as matlabfunction
 function [dF] = ddt(F)
     syms q1(t) q2(t) q3(t)
     q1 = q1(t); q2 = q2(t); q3 = q3(t);

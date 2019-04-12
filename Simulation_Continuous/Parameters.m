@@ -1,20 +1,30 @@
 %% Parameter file
-% Settings
+% Simulation Settings
 fprintf('Setting Parameters\n');
 Simulation.Formation = false;
-Simulation.Algorithm = 'Transpose';
-Simulation.life_animation = true;
-%Simulation.Systems = ['Pointmass', 'Manipulator'];
 Simulation.duration = 10;
+Simulation.dt = 0.05;
+
+% Animation Settings
+Simulation.life_animation = true;
+Simulation.time_rate = 1;
+Simulation.window_size = 2.0;
+Simulation.colors = {'k', 'r', 'g'};
 
 %% Define Gains
-Kd = diag([2; 3]);%gain*eye(2);       % Network gain
-gain = 1;%sqrt(det(Kd)); 
-B = sqrt(gain)*eye(2);  % ST Line Impedance
-lambda = 7;             % Multiplier of z in the output
-epsilon = 5e-1;
-Kv = 0*eye(2);
+% r-passivity
+lambda = 4;             % Multiplier of z in the output (4)
+epsilon = 5e-1;         % Levenberg constant    (5e-1)
 
+% Network
+gain = 2;               % Gain of the network (1)
+Kd = gain*diag([1; 1]); % Network gain as matrix (eye) 
+B = sqrt(gain)*eye(2);  % ST Line Impedance      (sqrt(gain)*eye)
+
+% Damping
+Kv = 0*eye(2);          % Dampens the response via z_dot  (0)
+
+%% Calculate the network gain
 fprintf('Loading Laplace\n');
 LaplaceScattering;
 
@@ -28,24 +38,19 @@ location_3 = [-1.5; -0.25; 0];
 [System1, SInfo1] = Manipulator_System(lambda, epsilon, location_1, 1);%Manipulator_System(lambda, epsilon,location_1, 1);
 [System2, SInfo2] = Manipulator_System(lambda, epsilon, location_2, 2);
 %[System3, SInfo3] = UAV_System(lambda, epsilon, 3);
+
 % Initial conditions
 q01 = zeros(SInfo1.n, 1); p01 = zeros(SInfo1.n, 1);
 q02 = zeros(SInfo2.n, 1); p02 = zeros(SInfo2.n, 1);
-%q02 = [0.4; -0.2; 0.6];
+% q03 = zeros(SInfo3.n, 1); p03 = zeros(SInfo3.n, 1);
 q01 = [0;0;0];
 q02 = [pi;-0.3;0.4];
-% q03 = zeros(SInfo3.n, 1); p03 = zeros(SInfo3.n, 1);
-% q03 = [-0.5; -0.5; 0.6];
 
 %% Set initial simulation parameters
-
 % Fun fact: Only the systems here are drawn
 Simulation.systems = {SInfo1; SInfo2};%; SInfo3}; 
 Simulation.N = numel(Simulation.systems);
-
 Simulation.l = 2;
-Simulation.colors = {'k', 'r', 'g'};
-
 
 %% Define Delays
 T = 0.1;
@@ -69,13 +74,11 @@ end
 Simulation.R = Simulation.Formation_Goal*System1.lambda/2;
 
 %% Validation of R
-%r0 = System1.Psi(q01)'*p01 + System1.a(q01);
-%Vr0 = R_Validation(q01, zeros(2,1),  zeros(2,1),  zeros(2,1), r0, 1);
-Vr0 = 0;
+Vr0 = 0; % Could be more extensive (but needs calculation for each agent)
+
 %% Simulation Parameters
 % Time parameters
-dt = 0.05; t_out = 0:dt:Simulation.duration;
+t_out = 0:Simulation.dt:Simulation.duration;
 set_param(model, 'StopTime', num2str(Simulation.duration))
 
 fprintf('Parameters set\n');
-

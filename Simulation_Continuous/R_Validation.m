@@ -4,14 +4,15 @@ function [V, Vdot, Vcomp] = R_Validation(q, qdot, p, pdot, r, tau, index)
      
     V = System.R(q, r);
     Vcomp = 0;%tau'*System.epsilon*inv(System.Psi(q)'*System.Psi(q) + System.epsilon*eye(2))*r;
-    % dPsi?
-    rdot = System.dPsi(q, qdot)'*p + System.Psi(q)'*pdot +...
-        System.lambda*System.Psi(q)'*qdot;% + ...
-        %System.epsilon*tau;% Change 1
     
+    rdot = System.dPsi(q, qdot)'*p + System.Psi(q)'*pdot +...
+        System.lambda*System.Psi(q)'*qdot;
+    
+    % rdot * Linv * r
     Vdot = rdot'*inv(System.Psi(q)'*System.Psi(q) + System.epsilon*eye(2))*r;
+    
+    % dV/dq
     Vdot = Vdot + 0.5*r'*System.drLr(q, qdot);
-    %Vdot = Vdot + 
     %Vdot = Vdot + tau'*System.epsilon*inv(System.Psi(q)'*System.Psi(q) + System.epsilon*eye(2))*r;
    
    

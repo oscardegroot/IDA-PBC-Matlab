@@ -1,3 +1,4 @@
+%% Take in a set of points and return a formation matrix
 function [R] = PointsToFormation(Points)
 
     num_points = size(Points, 2);

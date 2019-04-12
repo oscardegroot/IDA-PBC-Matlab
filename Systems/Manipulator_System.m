@@ -6,9 +6,12 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
     I = [0.05; 0.05; 0.05]; 
     
     algorithm = 1;
-    
     filename = ['Systems/Manipulator' num2str(n_link) '_n' num2str(index)];
 
+    %% Construct a mass matrix
+    % Based on convergence from energy coordinates to generalised
+    % coordinates (dx/dq'*Mx*dx/dq)
+    % Define Mx
     Mw = diag(reshape([I M M]', [n_link*3, 1]));
     
     Partial_wq = [];
@@ -39,16 +42,17 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
                 v = [v;dgamma; dx; dy];
                 dx = dx + 0.5*L(j)*cos(gamma);
                 dy = dy - 0.5*L(j)*sin(gamma);
-                %Partial_wq{i, (j-1)*n_link + 1 : n_link*j} = v;
             end
         end
         Partial_wq = [Partial_wq v];
     end
     Partial_wq = simplify(Partial_wq);
     
+    % Calculate the mass matrix
     Mm = Partial_wq' * Mw * Partial_wq;
     Mm = simplify(Mm);
-    % Find p'*dMdq*p
+    
+    %% Calculate other matrices such as qdot'*dM/dq
     temp_mat = qdot'*Mm*qdot;
     temp_qdotM = qdot'*Mm;
     
@@ -57,12 +61,11 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
     for i = 1 : n_link
          dMdq = [dMdq diff(temp_mat, q(i))];
          qdotM = [qdotM; diff(temp_qdotM, q(i))];
-         %dMdt = [dMdt diff(Mm'*qdot, q(i))];
     end
     
+    %% Calculate the potential and cooperative coordinates
     dV = [0; 0; 0];
     x = 0; y = 0; gamma = 0;
-    % Calculate the potential and cooperative coordinates
     for i = 1 : n_link
         
         % Potential
@@ -78,7 +81,7 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
     z = simplify([x; y]) + location(1:2);
     dV = simplify(dV);
     
-    % Construct dz/dq (=psi), dpsi/dt and dL/dt for feedback
+    %% Construct dz/dq (=psi) and dpsi/dt
     Psi = [];  
     for i = 1 : n_link
          Psi = [Psi diff(z, q(i))];
@@ -91,12 +94,13 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
         dPPsi = ddt(inv(Psi'*Psi + epsilon * eye(2)) * Psi');
     end
     
+    %% Calculate misc matrices
     dMdt = ddt(Mm);
     Mminv = inv(Mm');
     
     Find_drLr;
     
-    % Convertions
+    %% Convertions to matlabfunctions
     Mm = matlabFunction(Mm');
     Mm = @(q) Mm(q(1), q(2), q(3));
     Mminv = matlabFunction(Mminv);
@@ -108,13 +112,12 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
     Psi = matlabFunction(Psi);
     Psi = @(q) Psi(q(1), q(2), q(3));
     
-    
     dMdq = matlabFunction(dMdq');
     dMdq = @(q, qdot) dMdq(q(1), q(2), q(3), qdot(1), qdot(2), qdot(3));
     qdotM = matlabFunction(qdotM);
     System.qdotM = @(q, qdot) qdotM(q(1), q(2), q(3), qdot(1), qdot(2), qdot(3));
     
-    % System
+    %% Define the system structure
     System.M = @(q) Mm(q);
     System.Minv = @(q) Mminv(q);
     System.dMdq = @(q, qdot) dMdq(q, qdot);
@@ -135,34 +138,26 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
     System.dVs = @(q) [0; 0; 0];%
     System.Phi = @(q) System.Psi(q);
     
-    %% r-passivity specific variables
+    % r-passivity specific variables
     System.lambda = lambda;
     System.epsilon = epsilon;
     
     %% Kv for r with psi transposed
-    % With levenberg and lambda I_n
-if(algorithm == 1)
-   % System.Kv = @(q, qdot) lambda*eye(3);
-   % -> Kv modifies the "matching" condition while tau does not.
-   % gain Here helps ONLY in thediscrete case!!!0.1*
-    System.Kv = @(q, qdot) lambda*eye(3)-0.5*System.qdotM(q, qdot);
-   %System.Psi(q)*inv(System.Psi(q)'*System.Psi(q) + System.epsilon*eye(2))*...
-     %System.dPsi(q, qdot)'*System.M(q)-...
-   %ValidateLProof;
-   
-   System.R = @(q, r) 0.5*r'*inv(System.Psi(q)'*System.Psi(q) + System.epsilon*eye(2))*r;
-end
-    % Smoart Damping?-> nope r -> 0
-     %System.K = @(q) -inv(System.Psi(q)'*System.Psi(q) + 0.1*eye(2))...
-    %             + eye(2);
-    %% Kv for r with psi pseudo
-if(algorithm == 2)
-    System.Kv = @(q, qdot) lambda* System.Psi(q)*System.Psi(q)' - 0.5*System.dMdt(q, qdot)+...
-    System.Psi(q)*System.dPPsi(q, qdot)*System.M(q);
-    System.R = @(q, r) 0.5*r'*r;
-end
+    if(algorithm == 1)
+       % -> Kv modifies the "matching" condition while tau does not.
+       % gain Here helps ONLY in thediscrete case!!!0.1*
+       System.Kv = @(q, qdot) lambda*eye(3)-0.5*System.qdotM(q, qdot);
 
-%% Discretisation Data
+       System.R = @(q, r) 0.5*r'*inv(System.Psi(q)'*System.Psi(q) + System.epsilon*eye(2))*r;
+    end
+    %% Kv for r with psi pseudo
+    if(algorithm == 2)
+        System.Kv = @(q, qdot) lambda* System.Psi(q)*System.Psi(q)' - 0.5*System.dMdt(q, qdot)+...
+        System.Psi(q)*System.dPPsi(q, qdot)*System.M(q);
+        System.R = @(q, r) 0.5*r'*r;
+    end
+
+    %% Discrete Data
     System.Ts = RetrieveTs(varargin);
     
     % Discrete time compensation
@@ -177,16 +172,11 @@ end
         System.dVdt = @(q, qdot) dV(q, qdot);
         
         System.dVsdt = @(q, qdot) [0;0;0];
-        
-        %dKv = load('temp_dKv_save', 'dKv');%ddt2(System.Kv(q, qdot) * qdot); 
-        %System.dKv = @(q, qdot, qddot) 
-        
-        
-        
     end
 
     save(filename, 'System');
     
+    %% Save system information
     SInfo.n = size(Mm(q), 1);
     SInfo.name = 'Manipulator';
     SInfo.legend = {[SInfo.name ' q1'], [SInfo.name ' q2'], [SInfo.name ' q3']};

@@ -5,13 +5,14 @@ model = 'Model_2Systems';
 sim_name = 'pseudo';
 system_path = '../Systems/';
 
+% Add the systems to the path
 addpath(genpath(system_path));
 
 % Load parameters
 Parameters;
 
 %% Simulation
-fprintf('Starting simulation\n');
+fprintf('Simulating...\n');
 tic;
 load_system(model)
 sim(model)

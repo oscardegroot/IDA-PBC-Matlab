@@ -31,7 +31,7 @@ function Animate(qdata, Simulation, t_out)
                 Simulation.systems{j}.plotf(y(i, :), Simulation.colors{j}, Simulation.systems{j});
             end
             title(['T = ' num2str(floor(t(i)))]);
-            wsize = 1.5;
+            wsize = 2;
             woffset = [0; 0];
             xlim([woffset(1)-wsize, wsize+ woffset(1)]);
             ylim([woffset(2)-wsize, wsize+ woffset(2)]);

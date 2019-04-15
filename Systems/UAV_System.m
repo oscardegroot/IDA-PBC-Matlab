@@ -61,18 +61,18 @@ function [System, SInfo] = UAV_System(lambda, epsilon, index, varargin)
     System.epsilon = epsilon;
     
     System.Fd = @(q) System.Md(q)*inv(System.M(q))*System.Psi(q);
-    %System.Kv = @(q, p) eye(2);%System.Phi(q)*(lambda*System.Psi(q)' - 0.5*System.dMd_dq(p, q)'*inv(System.M(q))*p)...
-     %*inv(Fd(q)*Fd(q)' + epsilon*eye(3))*Fd(q)*System.Phi(q)';
+%     System.Kv = @(q, p) eye(2);%System.Phi(q)*(lambda*System.Psi(q)' - 0.5*System.dMd_dq(p, q)'*inv(System.M(q))*p)...
+%      *inv(Fd(q)*Fd(q)' + epsilon*eye(3))*Fd(q)*System.Phi(q)';
     
      % The right damping (supposively)
 %      System.Kv = @(q, p) System.Phi(q)*inv(System.Fd(q)'*System.Fd(q) + System.epsilon * eye(2))*...
 %          (lambda*eye(2) + inv(System.Fd(q)'*System.Fd(q) + System.epsilon * eye(2))...
 %      * System.Fd(q)'*System.J(q, p)*inv(System.Fd(q)*System.Fd(q)' + ...
 %          System.epsilon*eye(3))*System.Fd(q))*System.Phi(q)';
-    Finv = @(q) inv(System.F(q)*System.F(q)' + epsilon*eye(3));
+    Finv = @(q) inv(System.Fd(q)'*System.F(q) + epsilon*eye(2));
 
     %System.Kv = @(q, p) eye(2);%System.F(q)'*Finv(q) * lambda*eye(3) * Finv(q)*System.F(q);
-    System.Kv = @(q, p) lambda*pinv(System.F(q))*inv(System.M(q))*System.Md(q)*pinv(System.F(q))';
+    System.Kv = @(q, p) lambda*Finv(q)*System.Fd(q)'*inv(System.M(q))*System.Md(q)*System.Fd(q)*Finv(q)';
     System.R = @(q, r) 0.5*r'*inv(System.Psi(q)'*System.Md(q)*inv(System.M(q))*System.Psi(q) + System.epsilon*eye(2))*r;
 
     % Discrete time compensation

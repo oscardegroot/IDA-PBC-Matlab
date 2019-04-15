@@ -1,8 +1,8 @@
 clear all; clc; close all;
 
 % The simulink model this main document refers to
-model = 'Model_2Systems';
-sim_name = '2Manipulators_e2(1e-3)_b';
+model = 'Model_3Systems';
+sim_name = 'report_2M1U_F3_FC';
 system_path = '../Systems/';
 
 % Add the systems to the path
@@ -21,13 +21,29 @@ T_Sim = toc;
 fprintf('Finished Simulation in %.1f seconds\n', toc);
 
 %% Plot
-figure;
-plot(q.Time, q.Data, 'Linewidth', 1.5);
-title('Consensus in 2D');
-xlabel('time (s)'); ylabel('Amplitude (m)'); grid on;
-legend([SInfo1.legend SInfo2.legend]);
-saveMyFigure(gcf, [sim_name '_x'], 20, 10)
+if(Simulation.plots)
+    figure;
+    title('Consensus in 2D');
+    subplot(211);
+    plot(z1.Time, z1.Data, 'Linewidth', 1.5);
+    title('x');
+    xlabel('time (s)'); ylabel('Amplitude (m)'); grid on;
+    legend([SInfo1.legend SInfo2.legend]);
+    subplot(212);
+    plot(z2.Time, z2.Data, 'Linewidth', 1.5);
+    title('y');
+    xlabel('time (s)'); ylabel('Amplitude (m)'); grid on;
+    legend([SInfo1.legend SInfo2.legend]);
+    saveMyFigure(gcf, [sim_name '_z'], 20, 10);
+
+    figure;
+    plot(S_1.Time, S_1.Data, 'Linewidth', 1.5);
+    title('Storage function S(t)');
+    xlabel('time (s)'); ylabel('Amplitude'); grid on;
+    saveMyFigure(gcf, [sim_name '_S'], 20, 10)
+end
+
 Animate(q, Simulation, t_out);
 title('Trajectories in 2D');
 xlabel('x (m)'); ylabel('y (m)'); grid on;
-saveMyFigure(gcf, [sim_name '_xy'], 20, 20)
+saveMyFigure(gcf, [sim_name '_xy'], 20, 20);

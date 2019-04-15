@@ -2,7 +2,7 @@ clear all; clc; close all;
 
 % The simulink model this main document refers to
 model = 'Model_2Systems';
-sim_name = 'pseudo';
+sim_name = '2Manipulators_e2(1e-3)_b';
 system_path = '../Systems/';
 
 % Add the systems to the path

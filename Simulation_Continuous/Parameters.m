@@ -13,7 +13,7 @@ Simulation.colors = {'k', 'r', 'g'};
 
 %% Define Gains
 % r-passivity
-lambda = 4;             % Multiplier of z in the output (4)
+lambda = 6;             % Multiplier of z in the output (4)
 epsilon = 5e-1;         % Levenberg constant    (5e-1)
 
 % Network
@@ -22,7 +22,7 @@ Kd = gain*diag([1; 1]); % Network gain as matrix (eye)
 B = sqrt(gain)*eye(2);  % ST Line Impedance      (sqrt(gain)*eye)
 
 % Damping
-Kv = 0*eye(2);          % Dampens the response via z_dot  (0)
+Kv = 2*eye(2);          % Dampens the response via z_dot  (0)
 
 %% Calculate the network gain
 fprintf('Loading Laplace\n');
@@ -44,7 +44,7 @@ q01 = zeros(SInfo1.n, 1); p01 = zeros(SInfo1.n, 1);
 q02 = zeros(SInfo2.n, 1); p02 = zeros(SInfo2.n, 1);
 % q03 = zeros(SInfo3.n, 1); p03 = zeros(SInfo3.n, 1);
 q01 = [0;0;0];
-q02 = [pi;-0.3;0.4];
+q02 = [pi;0;0];
 
 %% Set initial simulation parameters
 % Fun fact: Only the systems here are drawn

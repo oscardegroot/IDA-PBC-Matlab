@@ -1,8 +1,8 @@
 clear all; clc; close all;
 
 % The simulink model this main document refers to
-model = 'Model_3Systems';
-sim_name = 'report_2M1U_F3_FC';
+model = 'Model_2Systems';
+sim_name = 'm2_rvalidation';
 system_path = '../Systems/';
 
 % Add the systems to the path

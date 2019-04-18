@@ -1,4 +1,4 @@
-function [tau, tau_fb, System] = Manipulator_Control(q, p, index)
+function [tau, tau_fb, tau_Kv, System] = Manipulator_Control(q, p, zdot, index)
 
     load(['Systems/Manipulator3_n' num2str(index)], 'System');
     
@@ -15,4 +15,9 @@ function [tau, tau_fb, System] = Manipulator_Control(q, p, index)
     
     % dV/dq term
     tau_fb = tau_fb - 0.5*System.drLr(q, qdot);
+    
+    % damping feedback
+    %tau_fb = tau_fb - System.Linv(q, qdot)*System.Psi(q)'*qdot;
+    
+    tau_Kv = zeros(2,1);%0.5*System.drLr(q, qdot);
 end

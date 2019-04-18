@@ -135,7 +135,8 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
     System.drLr = @(q, qdot) drLr(q, qdot);
     
     % Control
-    System.dVs = @(q) [0; 0; 0];%
+    System.dVs = @(q) [0; 8*q(2); 0];%
+    Vs = @(q)4*q(2)^2;
     System.Phi = @(q) System.Psi(q);
     
     % r-passivity specific variables
@@ -146,9 +147,15 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
     if(algorithm == 1)
        % -> Kv modifies the "matching" condition while tau does not.
        % gain Here helps ONLY in thediscrete case!!!0.1*
-       System.Kv = @(q, qdot) lambda*eye(3)-0.5*System.qdotM(q, qdot);
-
-       System.R = @(q, r) 0.5*r'*inv(System.Psi(q)'*System.Psi(q) + System.epsilon*eye(2))*r;
+       System.Kv = @(q, qdot) lambda*eye(3)-0.5*System.qdotM(q, qdot);% + eye(3);
+       System.Linv = @(q, qdot) inv(System.Psi(q)'*System.Psi(q) + System.epsilon*eye(2));
+       
+       %System.dzLz = @(q, qdot) 0.5*dzLz(q, qdot);
+       System.R = @(q, r, p) 0.5*r'*System.Linv(q, qdot)*r;% + 0.5*p'*System.Minv(q)*p;
+       %System.R = @(q, r) 0.5*r'*inv(System.Psi(q)'*System.Psi(q) + System.epsilon*eye(2))*r;
+              %Hd = @(q, p) 0.5*p'*System.M(q)*p + Vs(q);
+%        dL = ddt(inv(System.Psi(q)'*System.Psi(q) + System.epsilon*eye(2)));
+%        System.dVzdq = @(z, q, qdot) 0.5*lambda*z'*dL(q, qdot)*z;
     end
     %% Kv for r with psi pseudo
     if(algorithm == 2)

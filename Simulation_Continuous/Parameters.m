@@ -1,8 +1,8 @@
 %% Parameter file
 % Simulation Settings
 fprintf('Setting Parameters\n');
-Simulation.Formation = true;
-Simulation.duration = 15;
+Simulation.Formation = false;
+Simulation.duration = 10;
 Simulation.dt = 0.05;
 
 % Output Settings
@@ -11,7 +11,7 @@ Simulation.plots = true;
 % Animation Settings
 Simulation.life_animation = true;
 Simulation.time_rate = 1;
-Simulation.window_size = 2.5;
+Simulation.window_size = 2;
 Simulation.colors = {'k', 'r', 'g'};
 
 %% Define Gains
@@ -25,7 +25,7 @@ Kd = gain*diag([1; 1]); % Network gain as matrix (eye)
 B = sqrt(gain)*eye(2);  % ST Line Impedance      (sqrt(gain)*eye)
 
 % Damping
-Kv = 1*eye(2);          % Dampens the response via z_dot  (0)
+Kv = 0*eye(2);          % Dampens the response via z_dot  (0)
 
 %% Calculate the network gain
 fprintf('Loading Laplace\n');
@@ -35,24 +35,24 @@ LaplaceScattering;
 fprintf('Loading Systems\n');
 
 % Only for manipulators: Set the mounting point
-location_1 = [0; 0; 0];
-location_2 = [-1; -0.5; 0];
+location_1 = [0.5; 0; 0];
+location_2 = [-0.5; -0.5; 0];
 location_3 = [-1.5; -0.25; 0];
 [System1, SInfo1] = Manipulator_System(lambda, epsilon, location_1, 1);%Manipulator_System(lambda, epsilon,location_1, 1);
 [System2, SInfo2] = Manipulator_System(lambda, epsilon, location_2, 2);
-[System3, SInfo3] = UAV_System(lambda, epsilon, 3);
+%[System3, SInfo3] = UAV_System(lambda, epsilon, 3);
 
 % Initial conditions
 q01 = zeros(SInfo1.n, 1); p01 = zeros(SInfo1.n, 1);
 q02 = zeros(SInfo2.n, 1); p02 = zeros(SInfo2.n, 1);
-q03 = zeros(SInfo3.n, 1); p03 = zeros(SInfo3.n, 1);
-q01 = [1;0;0];
-q02 = [-pi/2;0;0];
-q03 = [-1.5; 1.5; 0.3];
+%q03 = zeros(SInfo3.n, 1); p03 = zeros(SInfo3.n, 1);
+q01 = [0.4;-1;-1];
+q02 = [-pi/2;0.1;0.4];
+%q03 = [-1.5; 1.5; 0.3];
 
 %% Set initial simulation parameters
 % Fun fact: Only the systems here are drawn
-Simulation.systems = {SInfo1; SInfo2; SInfo3}; 
+Simulation.systems = {SInfo1; SInfo2};%; SInfo3}; 
 Simulation.N = numel(Simulation.systems);
 Simulation.l = 2;
 

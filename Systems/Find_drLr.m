@@ -3,7 +3,7 @@ q = sym('q', [n_link, 1]);
 assume([q qdot], 'real');
 
 Linv = inv(Psi'*Psi + epsilon*eye(2));
-r = Psi'*Mm'*qdot + lambda*z;
+r = Psi'*qdot + lambda*z;
 l = numel(r);
 
 %% Synthesis using the sum derivation

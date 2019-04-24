@@ -28,5 +28,5 @@ tau = rjL;
 
 drLr = matlabFunction(tau);
 drLr = @(q, qdot) drLr(q(1), q(2), q(3), qdot(1), qdot(2), qdot(3));
-dzLz = matlabFunction(ziLzj);
-dzLz = @(q, qdot) dzLz(q(1), q(2), q(3), qdot(1), qdot(2), qdot(3));
+% dzLz = matlabFunction(ziLzj);
+% dzLz = @(q, qdot) dzLz(q(1), q(2), q(3), qdot(1), qdot(2), qdot(3));

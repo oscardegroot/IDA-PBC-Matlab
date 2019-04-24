@@ -4,11 +4,10 @@ function [tau, tau_fb, System] = Manipulator_Control(q, p, index)
     
     qdot = System.Minv(q) * p;
     tau = System.dV(q) - System.dVs(q) - System.Kv(q, qdot)*qdot;
-
-    qddot = -System.Minv(q)*System.dMdt(q, qdot)*System.Minv(q)*p;
     
     % Linv Psi'(M-I)qddot
-    tau_fb = System.Linv(q)*System.Psi(q)'*(System.M(q) - eye(3))*qddot;
+    tau_fb = System.Linv(q)*System.Psi(q)'*(System.M(q) - eye(3))*...
+        System.dMinvdt(q, qdot)*p;
     
     % Psi_dot * p term
     tau_fb =  tau_fb -System.Linv(q)*System.dPsi(q, qdot)'*qdot;
@@ -20,5 +19,5 @@ function [tau, tau_fb, System] = Manipulator_Control(q, p, index)
     tau_fb = tau_fb - 0.5*System.drLr(q, qdot);
     
     % damping feedback
-    tau_fb = tau_fb - System.Psi(q)'*qdot;
+    %tau_fb = tau_fb - System.Psi(q)'*qdot;
 end

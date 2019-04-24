@@ -97,7 +97,7 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
     %% Calculate misc matrices
     dMdt = ddt(Mm);
     Mminv = inv(Mm');
-    
+    dMinvdt = ddt(Mminv);
     Find_drLr;
     
     %% Convertions to matlabfunctions
@@ -122,6 +122,7 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
     System.Minv = @(q) Mminv(q);
     System.dMdq = @(q, qdot) dMdq(q, qdot);
     System.dMdt = @(q, qdot) dMdt(q, qdot);
+    System.dMinvdt = @(q, qdot) dMinvdt(q, qdot);
     System.dV = @(q) dV(q);
     System.F = @(q) eye(3);
     System.a = @(q) z(q);
@@ -135,8 +136,8 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
     System.drLr = @(q, qdot) drLr(q, qdot);
     
     % Control
-    System.dVs = @(q) [0; 8*q(2); 0];%
-    Vs = @(q)4*q(2)^2;
+    System.dVs = @(q) [0; 0; 0];%
+    %Vs = @(q)4*q(2)^2;
     System.Phi = @(q) System.Psi(q);
     
     % r-passivity specific variables
@@ -149,9 +150,10 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
        % gain Here helps ONLY in thediscrete case!!!0.1*
        System.Kv = @(q, qdot) lambda*eye(3)-System.dMdt(q, qdot) -0.5*System.qdotM(q, qdot);% + eye(3);
        System.Linv = @(q) inv(System.Psi(q)'*System.Psi(q) + System.epsilon*eye(2));
-       
+       System.Pcomp = @(q) inv(eye(3) - System.Psi(q)*System.Linv(q)*System.Psi(q)'*...
+           (System.M(q) - eye(3))*System.Minv(q));
        %System.dzLz = @(q, qdot) 0.5*dzLz(q, qdot);
-       System.R = @(q, r) 0.5*r'*System.Linv(q)*r + 0.5*lambda*System.a(q)'*System.a(q);
+       System.R = @(q, r) 0.5*r'*System.Linv(q)*r;% + 0.5*lambda*System.a(q)'*System.a(q);
        %System.R = @(q, r) 0.5*r'*inv(System.Psi(q)'*System.Psi(q) + System.epsilon*eye(2))*r;
               %Hd = @(q, p) 0.5*p'*System.M(q)*p + Vs(q);
 %        dL = ddt(inv(System.Psi(q)'*System.Psi(q) + System.epsilon*eye(2)));

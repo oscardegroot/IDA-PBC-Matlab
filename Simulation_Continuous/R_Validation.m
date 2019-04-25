@@ -2,8 +2,10 @@ function [V, Vdot, Vcomp] = R_Validation(q, qdot, p, pdot, r, tau_Kv, y_d, Kv, i
 
     load(['Systems/Manipulator3_n' num2str(index)], 'System');
      
-    V = System.R(q, r);
-    Vcomp = 0;%tau'*System.epsilon*inv(System.Psi(q)'*System.Psi(q) + System.epsilon*eye(2))*r;
+    V = pdot + System.Kv(q, qdot)*qdot+System.dVs(q)+0.5*System.dMdq(q, qdot);
+    
+    %System.R(q, r);
+    Vcomp = zeros(3, 1);%tau'*System.epsilon*inv(System.Psi(q)'*System.Psi(q) + System.epsilon*eye(2))*r;
     
     % Dit klopt natuurlijk niet
     %rdot = System.dPsi(q, qdot)'*p + System.Psi(q)'*pdot +...
@@ -15,7 +17,7 @@ function [V, Vdot, Vcomp] = R_Validation(q, qdot, p, pdot, r, tau_Kv, y_d, Kv, i
     Vdot = rdot'*System.Linv(q)*r;
     
     %% For S = 0 check (otherwise leave S terms out)
-    Vdot = Vdot + 0.5*r'*System.drLr(q, qdot);
+    %Vdot = Vdot + 0.5*r'*System.drLr(q, qdot);
     %Vdot = Vdot + System.lambda*qdot'*System.Psi(q)*System.a(q);
     
     %S = qdot'*System.Psi(q)*System.Psi(q)'*qdot;

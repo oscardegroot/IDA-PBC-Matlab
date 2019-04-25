@@ -10,13 +10,13 @@ function [tau, tau_fb, System] = Manipulator_Control(q, p, index)
         System.dMinvdt(q, qdot)*p;
     
     % Psi_dot * p term
-    tau_fb =  tau_fb -System.Linv(q)*System.dPsi(q, qdot)'*qdot;
+    tau_fb = tau_fb -System.Linv(q)*System.dPsi(q, qdot)'*qdot;
     
     % Psi+ * dVs term
     tau_fb = tau_fb + System.Linv(q)*System.Psi(q)'*System.dVs(q);
     
     % dV/dq term
-    tau_fb = tau_fb - 0.5*System.drLr(q, qdot);
+    %tau_fb = tau_fb - 0.5*System.drLr(q, qdot);
     
     % damping feedback
     %tau_fb = tau_fb - System.Psi(q)'*qdot;

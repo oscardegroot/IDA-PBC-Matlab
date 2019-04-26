@@ -11,8 +11,8 @@ function [qdot, pdot] = Manipulator_Dynamics(q, p, tau_l, tau_c, index)
     %A = inv(eye(3) - sigma*(eye(3) - System.Minv(q)));
     %det(A)
  %A = eye(3);
-    pdot = System.M(q)*(-System.dV(q) - 0.5*System.dMdq(q, qdot) +...
-            tau_l + System.Phi(q)*tau_c);
+    pdot = -System.dV(q) - 0.5*System.qdotM(q, qdot)*qdot +...
+            tau_l + System.Phi(q)*tau_c;
 end
 
 

@@ -98,7 +98,7 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
     dMdt = ddt(Mm);
     Mminv = inv(Mm');
     dMinvdt = ddt(Mminv);
-    %Find_drLr;
+    Find_drLr;
     
     %% Convertions to matlabfunctions
     Mm = matlabFunction(Mm');
@@ -133,7 +133,7 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
     else
         System.dPPsi = @(q, qdot) dPPsi(q, qdot);
     end
-    %System.drLr = @(q, qdot) drLr(q, qdot);
+    System.drLr = @(q, qdot) drLr(q, qdot);
     
     % Control
     System.dVs = @(q) [0; 0; 0];%
@@ -148,9 +148,9 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
     if(algorithm == 1)
        % -> Kv modifies the "matching" condition while tau does not.
        % gain Here helps ONLY in thediscrete case!!!0.1*
-       System.Kv = @(q, qdot) lambda*eye(3)-System.dMdt(q, qdot) -0.5*System.qdotM(q, qdot);% + eye(3);
-       System.Linv = @(q) eye(2);%inv(System.Psi(q)'*System.Psi(q) + System.epsilon*eye(2));
-       System.Sigma = @(q) svd(System.Psi(q));
+       System.Kv = @(q, qdot) lambda*eye(3)-0.5*System.qdotM(q, qdot);% + eye(3);
+       System.Linv = @(q) inv(System.Psi(q)'*System.Psi(q) + System.epsilon*eye(2));
+       %System.Sigma = @(q) svd(System.Psi(q));
 %        System.Pcomp = @(q) inv(eye(3) - System.Psi(q)*System.Linv(q)*System.Psi(q)'*...
 %            (System.M(q) - eye(3))*System.Minv(q));
        %System.dzLz = @(q, qdot) 0.5*dzLz(q, qdot);

@@ -16,7 +16,7 @@ Simulation.colors = {'k', 'r', 'g'};
 
 %% Define Gains
 % r-passivity
-lambda = 7;  %6           % Multiplier of z in the output (4)
+lambda = 14;  %6           % Multiplier of z in the output (4)
 epsilon = 5e-1;         % Levenberg constant    (5e-1)
 
 % Network
@@ -46,8 +46,9 @@ location_3 = [-1.5; -0.25; 0];
 q01 = zeros(SInfo1.n, 1); p01 = zeros(SInfo1.n, 1);
 q02 = zeros(SInfo2.n, 1); p02 = zeros(SInfo2.n, 1);
 %q03 = zeros(SInfo3.n, 1); p03 = zeros(SInfo3.n, 1);
-q01 = [0.4;-1;-1];
-q02 = [-pi/2;0.1;0.4];
+q02 = [-pi; 0; 0];
+%q01 = [0.4;-1;-1];
+%q02 = [-pi/2;0.1;0.4];
 %q03 = [-1.5; 1.5; 0.3];
 
 %% Set initial simulation parameters

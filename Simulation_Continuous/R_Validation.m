@@ -1,24 +1,28 @@
-function [V, Vdot, Vcomp] = R_Validation(q, qdot, p, pdot, r, tau_Kv, y_d, Kv, index)
+function [V, Vdot, S] = R_Validation(q, qdot, p, pdot, r, tau_Kv, y_d, Kv, index)
 
     load(['Systems/Manipulator3_n' num2str(index)], 'System');
      
-    aPsi = null(System.Psi(q)');
-    V = aPsi'*(pdot + System.lambda*qdot+System.dVs(q));
+    %aPsi = null(System.Psi(q)');
+    V = 0.5*p'*System.Minv(q)*p;%aPsi'*(pdot + System.lambda*qdot+System.dVs(q));
     
     %System.R(q, r);
-    Vcomp = 0;%tau'*System.epsilon*inv(System.Psi(q)'*System.Psi(q) + System.epsilon*eye(2))*r;
+    S = qdot'*System.Kv(q)*qdot;%tau'*System.epsilon*inv(System.Psi(q)'*System.Psi(q) + System.epsilon*eye(2))*r;
     
     % Dit klopt natuurlijk niet
     %rdot = System.dPsi(q, qdot)'*p + System.Psi(q)'*pdot +...
         %System.lambda*System.Psi(q)'*qdot;
-    rdot = System.dPsi(q, qdot)'*p +...
-        System.Psi(q)'*pdot + ...
-        System.lambda*System.Psi(q)'*qdot;
+             rdot = System.dPsi(q, qdot)'*p +...
+         System.Psi(q)'*pdot + ...
+         System.lambda*System.Psi(q)'*qdot;
     % rdot * Linv * r
-    Vdot = rdot'*System.Linv(q)*r;
+    %% For gain (tau_Kv = tau_c)
+    Vdot = rdot'*r;% - p'*System.dPsi(q, qdot)*r;
+    %Vdot = (System.Psi(q)'*pdot + System.lambda*System.Psi(q)'*qdot)'*r;
+    %tau_Kv'*r - qdot'*System.Kv(q)*qdot;
     
     %% For S = 0 check (otherwise leave S terms out)
-    Vdot = Vdot + 0.5*r'*System.drLr(q, qdot);
+    %Vdot = rdot'*System.Linv(q)*r;
+    %Vdot = Vdot + 0.5*r'*System.drLr(q, qdot);
     %Vdot = Vdot + System.lambda*qdot'*System.Psi(q)*System.a(q);
     
     %S = qdot'*System.Psi(q)*System.Psi(q)'*qdot;

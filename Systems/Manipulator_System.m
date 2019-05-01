@@ -148,7 +148,9 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
     if(algorithm == 1)
        % -> Kv modifies the "matching" condition while tau does not.
        % gain Here helps ONLY in thediscrete case!!!0.1*
-       System.Kv = @(q, qdot) lambda*eye(3)-0.5*System.qdotM(q, qdot);% + eye(3);
+       %System.r = @(q, qdot) System.Psi(q)'*qdot + System.lambda*System.a(q);
+       System.r = @(q, qdot) System.Psi(q)'*System.M(q)*qdot + System.lambda*System.a(q);
+       System.Kv = @(q, qdot) eye(3);%lambda*System.Psi(q)*System.Psi(q)';% + eye(3);%lambda*eye(3);%-0.5*System.qdotM(q, qdot);% + eye(3);
        System.Linv = @(q) inv(System.Psi(q)'*System.Psi(q) + System.epsilon*eye(2));
        %System.Sigma = @(q) svd(System.Psi(q));
 %        System.Pcomp = @(q) inv(eye(3) - System.Psi(q)*System.Linv(q)*System.Psi(q)'*...

@@ -1,7 +1,7 @@
 function [z, r, z_dot] = Manipulator_z(q, p, index)
 
     load(['Systems/Manipulator3_n' num2str(index)], 'System');
-    z_dot = zeros(2,1);
+    z_dot = System.Psi(q)'*System.Minv(q)*p;
     z = System.a(q);
-    r = System.lambda*z + System.Psi(q)'*p;
+    r = System.r(q, System.Minv(q)*p);%System.lambda*z + z_dot;
 end

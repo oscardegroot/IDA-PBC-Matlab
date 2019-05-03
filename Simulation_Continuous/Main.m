@@ -2,7 +2,7 @@ clear all; clc; close all;
 
 % The simulink model this main document refers to
 model = 'Model_2Systems';
-sim_name = 'm2_rvalidation';
+sim_name = '2m_opposite';
 system_path = '../Systems/';
 
 % Add the systems to the path

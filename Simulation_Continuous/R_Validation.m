@@ -8,17 +8,20 @@ function [V, Vdot, S] = R_Validation(q, qdot, p, pdot, r, tau_Kv, y_d, Kv, index
     %System.R(q, r);
     S = qdot'*System.Kv(q)*qdot;%tau'*System.epsilon*inv(System.Psi(q)'*System.Psi(q) + System.epsilon*eye(2))*r;
     
-    % Dit klopt natuurlijk niet
-    %rdot = System.dPsi(q, qdot)'*p + System.Psi(q)'*pdot +...
-        %System.lambda*System.Psi(q)'*qdot;
-             rdot = System.dPsi(q, qdot)'*p +...
-         System.Psi(q)'*pdot + ...
-         System.lambda*System.Psi(q)'*qdot;
+    qddot = System.dMinvdt(q,qdot)*p + System.Minv(q)*pdot;
+    
+    rdot = System.Psi(q)'*qddot + System.dPsi(q,qdot)'*qdot + ...
+        System.lambda*System.Psi(q)'*qdot;
+    
+%              rdot = System.dPsi(q, qdot)'*p +...
+%          System.Psi(q)'*pdot + ...
+%          System.lambda*System.Psi(q)'*qdot;
     % rdot * Linv * r
     %% For gain (tau_Kv = tau_c)
-    Vdot = rdot'*r;% - p'*System.dPsi(q, qdot)*r;
-    %Vdot = (System.Psi(q)'*pdot + System.lambda*System.Psi(q)'*qdot)'*r;
-    %tau_Kv'*r - qdot'*System.Kv(q)*qdot;
+    % Standard
+    Vdot = rdot'*r;
+    % Damping (lambda*zdot'z)
+    Vdot = Vdot + qdot'*System.Psi(q)*System.lambda*System.a(q);
     
     %% For S = 0 check (otherwise leave S terms out)
     %Vdot = rdot'*System.Linv(q)*r;

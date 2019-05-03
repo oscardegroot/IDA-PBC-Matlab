@@ -3,18 +3,24 @@ function [tau, tau_fb, System] = Manipulator_Control(q, p, index)
     load(['Systems/Manipulator3_n' num2str(index)], 'System');
     
     qdot = System.Minv(q) * p;
-    tau = System.dV(q) - System.dVs(q) + 0.5*System.qdotM(q, qdot)*qdot; %- System.dVs(q) - System.Kv(q, qdot)*qdot;
+    tau = System.dV(q) - System.dVs(q); %- System.dVs(q) - System.Kv(q, qdot)*qdot;
     
     %% Method 1) Pseudo-Inverse
     %pinv(System.Psi(q))
     %tau_fb = lsqminnorm(System.Psi(q),System.Kv(q,qdot)*qdot + System.dVs(q)+0.5*System.qdotM(q, qdot)*qdot) - ...
     %    (System.dPsi(q, qdot)'*qdot + System.lambda*System.Psi(q)'*qdot) + System.Psi(q)'*qdot;
     
-    %% Method 1) with psi'p
-    %tau_fb = pinv(System.Psi(q)', 1e-1)*(System.dPsi(q, qdot)'*p);
-    %- pinv(System.Psi(q)', 1e-1)*(System.dPsi(q, qdot)'*p)
-    tau = tau - (System.lambda)*qdot;
-    tau_fb = -System.dPsi(q,qdot)'*p + System.Psi(q)'*System.dVs(q);%zeros(2,1);
+    %% Direct Method with psi'p
+%     tau = tau - (System.lambda)*qdot;
+%     tau_fb = -System.dPsi(q,qdot)'*p + System.Psi(q)'*System.dVs(q);
+    
+    %% Direct Method with zdot
+    %tau = tau - System.dMinvdt(q, qdot)*p - (System.lambda + 1)*qdot;
+    tau = tau + 0.5*System.qdotM(q, qdot)*qdot...
+            - System.dMinvdt(q, qdot)*p...
+            - (System.lambda + 1)*qdot;
+    tau_fb = -System.dPsi(q,qdot)'*qdot + System.Psi(q)'*System.dVs(q);
+    
     % Linv Psi'(M-I)qddot
     %tau_fb = System.Linv(q)*System.Psi(q)'*(System.M(q) - eye(3))*...
     %    System.dMinvdt(q, qdot)*p;

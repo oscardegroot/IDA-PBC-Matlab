@@ -1,14 +1,14 @@
 function [V, Vdot, S] = R_Validation(q, qdot, p, pdot, r, tau_Kv, y_d, Kv, index)
 
-    load(['Systems/Manipulator3_n' num2str(index)], 'System');
+    load(['Systems/uav_n' num2str(index)], 'System');
      
     %aPsi = null(System.Psi(q)');
-    V = 0.5*p'*System.Minv(q)*p;%aPsi'*(pdot + System.lambda*qdot+System.dVs(q));
+    V = 0;%0.5*p'*System.Minv(q)*p;%aPsi'*(pdot + System.lambda*qdot+System.dVs(q));
     
     %System.R(q, r);
-    S = qdot'*System.Kv(q)*qdot;%tau'*System.epsilon*inv(System.Psi(q)'*System.Psi(q) + System.epsilon*eye(2))*r;
+    S = 0;%qdot'*System.Kv(q)*qdot;%tau'*System.epsilon*inv(System.Psi(q)'*System.Psi(q) + System.epsilon*eye(2))*r;
     
-    qddot = System.dMinvdt(q,qdot)*p + System.Minv(q)*pdot;
+    qddot = pdot;%System.dMinvdt(q,qdot)*p + System.Minv(q)*pdot;
     
     rdot = System.Psi(q)'*qddot + System.dPsi(q,qdot)'*qdot + ...
         System.lambda*System.Psi(q)'*qdot;
@@ -21,7 +21,7 @@ function [V, Vdot, S] = R_Validation(q, qdot, p, pdot, r, tau_Kv, y_d, Kv, index
     % Standard
     Vdot = rdot'*r;
     % Damping (lambda*zdot'z)
-    Vdot = Vdot + qdot'*System.Psi(q)*System.lambda*System.a(q);
+    %Vdot = Vdot + qdot'*System.Psi(q)*System.lambda*System.a(q);
     
     %% For S = 0 check (otherwise leave S terms out)
     %Vdot = rdot'*System.Linv(q)*r;

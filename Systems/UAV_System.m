@@ -18,7 +18,7 @@ function [System, SInfo] = UAV_System(lambda, epsilon, index, varargin)
     System.Minv = @(q) eye(3);
     System.n = 3;
     System.name = 'UAV';
-    System.dV = @(q) [0;0;-g/e*sin(q(3))];% differs from that in 267 Laurens
+    System.dV = @(q) [0;0;-g/e*sin(q(3))];
     System.F = @(q) [eye(2); [1/e*cos(q(3)) 1/e*sin(q(3))]];
     System.a = @(q) q(1:2) - 1/g3 * [k3*sin(q(3)); (k3-k1*e)*(1-cos(q(3)))];
     System.Psi = @(q) [eye(2); [-k3/g3*cos(q(3)) -(k3-k1*e)/g3*sin(q(3))]];
@@ -55,16 +55,23 @@ function [System, SInfo] = UAV_System(lambda, epsilon, index, varargin)
     System.dVs = @(q) [0; 0; g/g3*sin(q(3))];
     %System.Kv = @(q, p)eye(2);
     %System.Phi = @(q) (System.F(q)'*System.F(q))*System.F(q)'*System.Md(q)*inv(System.M(q))*System.Psi(q);
-    System.Phi = @(q) pinv(System.Psi(q), 1e-5)';
+    %System.Phi = @(q) pinv(System.Psi(q), 1e-5)';
     %% R-passivity components
-    System.lambda = lambda;
-    System.epsilon = epsilon;
+    System.lambda = lambda;System.epsilon = epsilon;
     System.dMinvdt = @(q,qdot)zeros(3,3);
     System.qdotM = @(q,qdot) zeros(3, 3);
-    %System.Fd = @(q) System.Md(q)*inv(System.M(q))*System.Psi(q);
-    %System.Fd = @(q) pinv(System.Psi(q))';
+    
+    System.Kv = @(q, qdot) eye(2);
+    System.Fd = @(q) System.Md(q)*System.Psi(q)*inv(System.Psi(q)'*System.Psi(q));
+    
+    % System r-passivity
     System.r = @(q, qdot) System.Psi(q)'*qdot + System.lambda*System.a(q);
-%     System.Kv = @(q, p) eye(2);%System.Phi(q)*(lambda*System.Psi(q)' - 0.5*System.dMd_dq(p, q)'*inv(System.M(q))*p)...
+   %System.rdot = @(q, qdot)
+    System.R = @(q, r) 0.5*r'*inv(System.Psi(q)'*System.Md(q)*inv(System.M(q))*System.Psi(q) + System.epsilon*eye(2))*r;
+
+    
+    
+    %     System.Kv = @(q, p) eye(2);%System.Phi(q)*(lambda*System.Psi(q)' - 0.5*System.dMd_dq(p, q)'*inv(System.M(q))*p)...
 %      *inv(Fd(q)*Fd(q)' + epsilon*eye(3))*Fd(q)*System.Phi(q)';
     
      % The right damping (supposively)
@@ -75,8 +82,7 @@ function [System, SInfo] = UAV_System(lambda, epsilon, index, varargin)
     %Finv = @(q) inv(System.Fd(q)'*System.F(q) + epsilon*eye(2));
 
     %System.Kv = @(q, p) eye(2);%System.F(q)'*Finv(q) * lambda*eye(3) * Finv(q)*System.F(q);
-    System.Kv = @(q, p) lambda*Finv(q)*System.Fd(q)'*inv(System.M(q))*System.Md(q)*System.Fd(q)*Finv(q)';
-    System.R = @(q, r) 0.5*r'*inv(System.Psi(q)'*System.Md(q)*inv(System.M(q))*System.Psi(q) + System.epsilon*eye(2))*r;
+    %System.Kv = @(q, p) lambda*Finv(q)*System.Fd(q)'*inv(System.M(q))*System.Md(q)*System.Fd(q)*Finv(q)';
 
     % Discrete time compensation
     if(System.Ts > 0)
@@ -95,7 +101,7 @@ function [System, SInfo] = UAV_System(lambda, epsilon, index, varargin)
     SInfo.plotf = @PlotUAV;
     SInfo.filename = filename;
     SInfo.h = e;
-    SInfo.l = e;
+    SInfo.l = e*2;
    
     save(filename, 'System');
 end

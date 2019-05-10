@@ -20,54 +20,57 @@ function [System, SInfo] = UAV_System(lambda, epsilon, index, varargin)
     System.name = 'UAV';
     System.dV = @(q) [0;0;-g/e*sin(q(3))];
     System.F = @(q) [eye(2); [1/e*cos(q(3)) 1/e*sin(q(3))]];
-    System.a = @(q) q(1:2) - 1/g3 * [k3*sin(q(3)); (k3-k1*e)*(1-cos(q(3)))];
-    System.Psi = @(q) [eye(2); [-k3/g3*cos(q(3)) -(k3-k1*e)/g3*sin(q(3))]];
-    System.dPsi = @(q, qdot) [zeros(2, 2); [k3/g3*sin(q(3))*qdot(3) -(k3-k1*e)/g3*cos(q(3))*qdot(3)]];
+    
+    %% Mapped Potential
+    a = 0.45;
+%     l1 = (1/e + sqrt((1/e)^2 + (4*g/(a*e))))/2
+%     System.a = @(q) q(1:2) + [-1/l1*sin(q(3)); 1/l1*(cos(q(3)) - 1)];
+%     System.Psi = @(q) [eye(2); [-1/l1*cos(q(3)) -1/l1*sin(q(3))]];
+%     System.dPsi = @(q, qdot) [zeros(2,2); [1/l1*sin(q(3))*qdot(3) -1/l1*cos(q(3))*qdot(3)]];
+%     System.nPsi = @(q) [cos(q(3)); sin(q(3)); l1];
+    l1 = (a/e + a/e*sqrt(1 - 4*e/a))/2;
+    System.a = @(q) q(1:2) + [-a/l1*sin(q(3)); a/l1*(cos(q(3)) - 1)];
+    System.Psi = @(q) [eye(2); [-a/l1*cos(q(3)) -a/l1*sin(q(3))]];
+    System.dPsi = @(q, qdot) [zeros(2,2); [a/l1*sin(q(3))*qdot(3) -a/l1*cos(q(3))*qdot(3)]];
+    System.nPsi = @(q) [a*cos(q(3)); a*sin(q(3)); l1];
+
+    System.dVs = @(q) [0; 0; (g/a)*sin(q(3))];
+    
+    System.Fp = @(q) [cos(q(3)) sin(q(3)) -e];
+    System.Kv = @(q) eye(2);%10*pinv(System.F(q))*pinv(System.F(q))';
+    %ValidateMatching;
+    %% IDA-PBC
+    %System.a = @(q) q(1:2) - 1/g3 * [k3*sin(q(3)); (k3-k1*e)*(1-cos(q(3)))];
+    %System.Psi = @(q) [eye(2); [-k3/g3*cos(q(3)) -(k3-k1*e)/g3*sin(q(3))]];
+    %System.dPsi = @(q, qdot) [zeros(2, 2); [k3/g3*sin(q(3))*qdot(3) -(k3-k1*e)/g3*cos(q(3))*qdot(3)]];
     
     % Control
-    System.Md = @(q) [k1*e*(cos(q(3)))^2 + k3 k1*e*cos(q(3))*sin(q(3)) k1*cos(q(3));...
-                      k1*e*cos(q(3))*sin(q(3)) -k1*e*(cos(q(3)))^2+k3 k1*sin(q(3));...
-                      k1*cos(q(3)) k1*sin(q(3)) k2];
-    
-    %% Find Mdot;
-%     q = sym('q', [3, 1]); p = sym('p', [3, 1]);
-%     qdot = sym('qdot', [3, 1]);
-%     assume([q p qdot], 'real');
-%     
-%     Md = System.Md([0; 0; q(3)]);
-%     Mdinv = simplify(inv(Md));
-%     Mdinv = matlabFunction(Mdinv);
-%     Mdinv = @(q, qdot) Mdinv(q(1), q(2), q(3), qdot(1), qdot(2), qdot(3));
-%     System.Mdinv = Mdinv;
-    
-    %System.dMd_dq = dMdq(Md, q(3));
-        %System.Fp = @(q) [cos(q(3)) sin(q(3)) -e];
-    % Find Mdot directly, calculate and simplify Md inverse then 
-    % validate on single-agent
-    
-    Find_dMdq;
-    System.dMd_dq = dMd_dq;   
-
-    J1 = @(q, p) p'*inv(System.Md(q)) * [-2*e*cos(q(3)); 2*e*sin(q(3)); 1];
-    J2 = @(q, p) p'*inv(System.Md(q)) * [0; 1; 0];
-    J3 = @(q, p) p'*inv(System.Md(q)) * [-1; 0; 0];
-    System.J = @(q, p) -k1*g3/2*[0 J1(q, p) J2(q, p); -J1(q, p) 0 J3(q, p); -J2(q, p) -J3(q, p) 0];
-    System.dVs = @(q) [0; 0; g/g3*sin(q(3))];
+%     System.Md = @(q) [k1*e*(cos(q(3)))^2 + k3 k1*e*cos(q(3))*sin(q(3)) k1*cos(q(3));...
+%                       k1*e*cos(q(3))*sin(q(3)) -k1*e*(cos(q(3)))^2+k3 k1*sin(q(3));...
+%                       k1*cos(q(3)) k1*sin(q(3)) k2];
+%     Find_dMdq;
+%     System.dMd_dq = dMd_dq;   
+% 
+%     J1 = @(q, p) p'*inv(System.Md(q)) * [-2*e*cos(q(3)); 2*e*sin(q(3)); 1];
+%     J2 = @(q, p) p'*inv(System.Md(q)) * [0; 1; 0];
+%     J3 = @(q, p) p'*inv(System.Md(q)) * [-1; 0; 0];
+%     System.J = @(q, p) -k1*g3/2*[0 J1(q, p) J2(q, p); -J1(q, p) 0 J3(q, p); -J2(q, p) -J3(q, p) 0];
+%     System.dVs = @(q) [0; 0; g/g3*sin(q(3))];
     %System.Kv = @(q, p)eye(2);
     %System.Phi = @(q) (System.F(q)'*System.F(q))*System.F(q)'*System.Md(q)*inv(System.M(q))*System.Psi(q);
-    %System.Phi = @(q) pinv(System.Psi(q), 1e-5)';
+    
     %% R-passivity components
     System.lambda = lambda;System.epsilon = epsilon;
     System.dMinvdt = @(q,qdot)zeros(3,3);
     System.qdotM = @(q,qdot) zeros(3, 3);
     
-    System.Kv = @(q, qdot) eye(2);
-    System.Fd = @(q) System.Md(q)*System.Psi(q)*inv(System.Psi(q)'*System.Psi(q));
+    %System.Kv = @(q, qdot) eye(2);
+    %System.Fd = @(q) System.Md(q)*System.Psi(q)*inv(System.Psi(q)'*System.Psi(q));
     
     % System r-passivity
     System.r = @(q, qdot) System.Psi(q)'*qdot + System.lambda*System.a(q);
    %System.rdot = @(q, qdot)
-    System.R = @(q, r) 0.5*r'*inv(System.Psi(q)'*System.Md(q)*inv(System.M(q))*System.Psi(q) + System.epsilon*eye(2))*r;
+    System.R = @(q, r) 0.5*r'*r;
 
     
     

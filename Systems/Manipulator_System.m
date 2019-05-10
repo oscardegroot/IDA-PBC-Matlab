@@ -59,7 +59,7 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
     % Construct d/dq
     dMdq = []; dMdt = []; qdotM = [];
     for i = 1 : n_link
-         dMdq = [dMdq diff(temp_mat, q(i))];
+         dMdq = [dMdq; diff(temp_mat, q(i))];
          qdotM = [qdotM; diff(temp_qdotM, q(i))];
     end
     
@@ -136,7 +136,7 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
     System.drLr = @(q, qdot) drLr(q, qdot);
     
     % Control
-    System.dVs = @(q) [0; 5*q(2); 0];
+    System.dVs = @(q) [0; 0; 0];
     System.Phi = @(q) System.Psi(q);
     
     % r-passivity specific variables

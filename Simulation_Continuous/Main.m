@@ -18,7 +18,7 @@ load_system(model)
 sim(model)
 T_Sim = toc;
 
-fprintf('Finished Simulation in %.1f seconds\n', toc);
+fprintf('Finished Simulation in %.0f seconds\n', toc);
 
 %% Plot
 if(Simulation.plots)

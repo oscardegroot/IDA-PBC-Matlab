@@ -6,7 +6,7 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
     I = [0.05; 0.05; 0.05]; 
     
     algorithm = 1;
-    filename = ['Systems/Manipulator' num2str(n_link) '_n' num2str(index)];
+    filename = ['../Systems/Manipulator' num2str(n_link) '_n' num2str(index)];
 
     %% Construct a mass matrix
     % Based on convergence from energy coordinates to generalised

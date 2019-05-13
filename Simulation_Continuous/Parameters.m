@@ -34,28 +34,12 @@ LaplaceScattering;
 %% Define systems
 fprintf('Loading Systems\n');
 
-% Only for manipulators: Set the mounting point
-location_1 = [0.5; 0; 0];
-location_2 = [-0.5; -0.5; 0];
-location_3 = [-1.5; -0.25; 0];
-[System1, SInfo1] = Manipulator_System(lambda, epsilon, location_1, 1);%Manipulator_System(lambda, epsilon,location_1, 1);
-%[System2, SInfo2] = Manipulator_System(lambda, epsilon, location_2, 2);
-[System2, SInfo2] = UAV_System(lambda, epsilon, 2);
-
-% Initial conditions
-q01 = zeros(SInfo1.n, 1); p01 = zeros(SInfo1.n, 1);
-q02 = zeros(SInfo2.n, 1); p02 = zeros(SInfo2.n, 1);
-%q03 = zeros(SInfo3.n, 1); p03 = zeros(SInfo3.n, 1);
-q02 = [0.5; 1.5; pi/2+pi/4];
-q01 = [-pi;0.2;0.4];
-%q02 = [-pi/2;0.1;0.4];
-%q03 = [-1.5; 1.5; 0.3];
+%% Load a Setup
+setup()
 
 %% Set initial simulation parameters
 % Fun fact: Only the systems here are drawn
-Simulation.systems = {SInfo1; SInfo2};%; SInfo3}; 
-Simulation.N = numel(Simulation.systems);
-Simulation.l = 2;
+Simulation.systems = SInfo;
 
 %% Define Delays
 T = 0.1;
@@ -76,7 +60,7 @@ else
     Simulation.Formation_Goal = zeros(Simulation.N*Simulation.l, Simulation.N);
 end
 
-Simulation.R = Simulation.Formation_Goal*System1.lambda/2;
+Simulation.R = Simulation.Formation_Goal*lambda/2;
 
 %% Validation of R
 Vr0 = 0; % Could be more extensive (but needs calculation for each agent)

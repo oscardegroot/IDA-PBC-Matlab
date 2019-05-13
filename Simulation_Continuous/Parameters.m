@@ -46,8 +46,8 @@ location_3 = [-1.5; -0.25; 0];
 q01 = zeros(SInfo1.n, 1); p01 = zeros(SInfo1.n, 1);
 q02 = zeros(SInfo2.n, 1); p02 = zeros(SInfo2.n, 1);
 %q03 = zeros(SInfo3.n, 1); p03 = zeros(SInfo3.n, 1);
-q02 = [-0.5; -1; 0.9];
-q01 = [0.4;-1;-1];
+q02 = [0.5; 1.5; pi/2+pi/4];
+q01 = [-pi;0.2;0.4];
 %q02 = [-pi/2;0.1;0.4];
 %q03 = [-1.5; 1.5; 0.3];
 

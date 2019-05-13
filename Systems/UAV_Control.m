@@ -3,7 +3,7 @@ function [tau, tau_fb, System] = UAV_Control(q, p, index)
     load(['Systems/UAV_n' num2str(index)]);
     qdot = System.Minv(q)*p;
     
-        %% Direct Scheme Control
+        %% Direct Scheme Control Zdot
         %System.Fp(q)*(System.dV(q) - System.nPsi(q)*System.nPsi(q)'*System.dVs(q))
     tau = inv(System.F(q)'*System.F(q))*System.F(q)'*(System.dV(q) ...
         - System.nPsi(q)*System.nPsi(q)'*System.dVs(q))...

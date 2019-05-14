@@ -35,7 +35,7 @@ LaplaceScattering;
 fprintf('Loading Systems\n');
 
 %% Load a Setup
-setup()
+setup();
 
 %% Set initial simulation parameters
 % Fun fact: Only the systems here are drawn
@@ -50,17 +50,12 @@ T32 = T*2;
 
 %% Define a formation if necessary
 if(Simulation.Formation)
-    point_1 = [SInfo3.l; 0];
-    point_2 = [-SInfo3.l; 0];
-    point_3 = [0; 0];
-    points = [point_1 point_2 point_3];
     Simulation.Formation_Goal = PointsToFormation(points);
-    
 else
     Simulation.Formation_Goal = zeros(Simulation.N*Simulation.l, Simulation.N);
 end
 
-Simulation.R = Simulation.Formation_Goal*lambda/2;
+Simulation.R = Simulation.Formation_Goal*System{1}.lambda/2;
 
 %% Validation of R
 Vr0 = 0; % Could be more extensive (but needs calculation for each agent)

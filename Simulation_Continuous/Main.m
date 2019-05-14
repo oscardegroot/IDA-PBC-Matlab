@@ -1,9 +1,10 @@
 clear all; clc; close all;
 
 % The simulink model this main document refers to
-model = 'Model_2Systems';
-setup = @UAV_Manipulator;
+
 sim_name = '2m_opposite';
+setup = @Two_Manipulators_One_UAV;
+
 system_path = '../Systems/';
 setup_path = 'Setups/';
 

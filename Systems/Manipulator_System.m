@@ -6,7 +6,7 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
     I = [0.05; 0.05; 0.05]; 
     
     algorithm = 1;
-    filename = ['../Systems/Manipulator' num2str(n_link) '_n' num2str(index)];
+    filename = ['Systems/Manipulator' num2str(n_link) '_n' num2str(index)];
 
     %% Construct a mass matrix
     % Based on convergence from energy coordinates to generalised
@@ -53,13 +53,13 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
     Mm = simplify(Mm);
     
     %% Calculate other matrices such as qdot'*dM/dq
-    temp_mat = qdot'*Mm*qdot;
+    %temp_mat = qdot'*Mm*qdot;
     temp_qdotM = qdot'*Mm;
-    
+    %dMdq = [];
     % Construct d/dq
-    dMdq = []; dMdt = []; qdotM = [];
+    dMdt = []; qdotM = [];
     for i = 1 : n_link
-         dMdq = [dMdq; diff(temp_mat, q(i))];
+         %dMdq = [dMdq; diff(temp_mat, q(i))];
          qdotM = [qdotM; diff(temp_qdotM, q(i))];
     end
     
@@ -112,15 +112,15 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
     Psi = matlabFunction(Psi);
     Psi = @(q) Psi(q(1), q(2), q(3));
     
-    dMdq = matlabFunction(dMdq');
-    dMdq = @(q, qdot) dMdq(q(1), q(2), q(3), qdot(1), qdot(2), qdot(3));
+    %dMdq = matlabFunction(dMdq');
+    %dMdq = @(q, qdot) dMdq(q(1), q(2), q(3), qdot(1), qdot(2), qdot(3));
     qdotM = matlabFunction(qdotM);
     System.qdotM = @(q, qdot) qdotM(q(1), q(2), q(3), qdot(1), qdot(2), qdot(3));
     
     %% Define the system structure
     System.M = @(q) Mm(q);
     System.Minv = @(q) Mminv(q);
-    System.dMdq = @(q, qdot) dMdq(q, qdot);
+    %System.dMdq = @(q, qdot) dMdq(q, qdot);
     System.dMdt = @(q, qdot) dMdt(q, qdot);
     System.dMinvdt = @(q, qdot) dMinvdt(q, qdot);
     System.dV = @(q) dV(q);
@@ -151,9 +151,10 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
        System.r = @(q, qdot) System.Psi(q)'*qdot + System.lambda*System.a(q);
        %System.r = @(q, qdot) System.Psi(q)'*System.M(q)*qdot + System.lambda*System.a(q);
        
-       System.Kv = @(q, qdot) eye(3);%lambda*System.Psi(q)*System.Psi(q)';% + eye(3);%lambda*eye(3);%-0.5*System.qdotM(q, qdot);% + eye(3);
-       System.Linv = @(q) inv(System.Psi(q)'*System.Psi(q) + System.epsilon*eye(2));
-       System.R = @(q, r) 0.5*r'*System.Linv(q)*r;% + 0.5*lambda*System.a(q)'*System.a(q);
+       System.nPsi = @(q) eye(3) - pinv(System.Psi(q),1e-5)'*System.Psi(q)';
+       %System.Kv = @(q, qdot) eye(3);%lambda*System.Psi(q)*System.Psi(q)';% + eye(3);%lambda*eye(3);%-0.5*System.qdotM(q, qdot);% + eye(3);
+       %System.Linv = @(q) inv(System.Psi(q)'*System.Psi(q) + System.epsilon*eye(2));
+       System.R = @(q, r) 0.5*r'*r;% + 0.5*lambda*System.a(q)'*System.a(q);
     end
     %% Kv for r with psi pseudo
     if(algorithm == 2)

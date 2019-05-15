@@ -53,13 +53,11 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
     Mm = simplify(Mm);
     
     %% Calculate other matrices such as qdot'*dM/dq
-    %temp_mat = qdot'*Mm*qdot;
     temp_qdotM = qdot'*Mm;
-    %dMdq = [];
+    
     % Construct d/dq
-    dMdt = []; qdotM = [];
+    qdotM = [];
     for i = 1 : n_link
-         %dMdq = [dMdq; diff(temp_mat, q(i))];
          qdotM = [qdotM; diff(temp_qdotM, q(i))];
     end
     
@@ -111,16 +109,13 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
     z = @(q) z(q(1), q(2), q(3));
     Psi = matlabFunction(Psi);
     Psi = @(q) Psi(q(1), q(2), q(3));
-    
-    %dMdq = matlabFunction(dMdq');
-    %dMdq = @(q, qdot) dMdq(q(1), q(2), q(3), qdot(1), qdot(2), qdot(3));
+
     qdotM = matlabFunction(qdotM);
     System.qdotM = @(q, qdot) qdotM(q(1), q(2), q(3), qdot(1), qdot(2), qdot(3));
     
     %% Define the system structure
     System.M = @(q) Mm(q);
     System.Minv = @(q) Mminv(q);
-    %System.dMdq = @(q, qdot) dMdq(q, qdot);
     System.dMdt = @(q, qdot) dMdt(q, qdot);
     System.dMinvdt = @(q, qdot) dMinvdt(q, qdot);
     System.dV = @(q) dV(q);
@@ -133,15 +128,15 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
     else
         System.dPPsi = @(q, qdot) dPPsi(q, qdot);
     end
-    System.drLr = @(q, qdot) drLr(q, qdot);
+    %System.drLr = @(q, qdot) drLr(q, qdot);
     
     % Control
     System.dVs = @(q) [0; 0; 0];
-    System.Phi = @(q) System.Psi(q);
+    %System.Phi = @(q) System.Psi(q);
     
     % r-passivity specific variables
     System.lambda = lambda;
-    System.epsilon = epsilon;
+    %System.epsilon = epsilon;
     
     %% Kv for r with psi transposed
     if(algorithm == 1)
@@ -152,9 +147,8 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
        %System.r = @(q, qdot) System.Psi(q)'*System.M(q)*qdot + System.lambda*System.a(q);
        
        System.nPsi = @(q) eye(3) - pinv(System.Psi(q),1e-5)'*System.Psi(q)';
-       %System.Kv = @(q, qdot) eye(3);%lambda*System.Psi(q)*System.Psi(q)';% + eye(3);%lambda*eye(3);%-0.5*System.qdotM(q, qdot);% + eye(3);
-       %System.Linv = @(q) inv(System.Psi(q)'*System.Psi(q) + System.epsilon*eye(2));
-       System.R = @(q, r) 0.5*r'*r;% + 0.5*lambda*System.a(q)'*System.a(q);
+       System.Kv = @(q, qdot) eye(3);
+       System.R = @(q, r) 0.5*r'*r;
     end
     %% Kv for r with psi pseudo
     if(algorithm == 2)
@@ -176,7 +170,6 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
         %% EMatching
         dV = ddt(dV(q));
         System.dVdt = @(q, qdot) dV(q, qdot);
-        
         System.dVsdt = @(q, qdot) [0;0;0];
     end
 
@@ -185,6 +178,7 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
     %% Save system information
     SInfo.n = size(Mm(q), 1);
     SInfo.name = 'Manipulator';
+    SInfo.identifier = ['Manipulator #' num2str(index)];
     SInfo.legend = {[SInfo.name ' q1'], [SInfo.name ' q2'], [SInfo.name ' q3']};
     SInfo.location = location;
     SInfo.plotf = @PlotManipulator;

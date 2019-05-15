@@ -19,8 +19,8 @@ q02 = zeros(SInfo{2}.n, 1); p02 = zeros(SInfo{2}.n, 1);
 q03 = zeros(SInfo{3}.n, 1); p03 = zeros(SInfo{3}.n, 1);
 
 %% Initial conditions (Comment for zero)
-q01 = [-pi/2; 0.2; 0];
-q02 = [3*pi/4;-0.3;-0.5];
+q01 = [pi/2; 0.2; 0.3];
+q02 = [-pi/2;-0.3;-0.5];
 q03 = [-1.5; 0.8; pi/2];
 
 %% Formation specified by points

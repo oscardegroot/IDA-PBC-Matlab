@@ -1,5 +1,7 @@
-%% Parameter file
-% Simulation Settings
+%% Set Parameters %%
+% The scenario is defined in the main file
+
+%% Simulation Settings
 fprintf('Setting Parameters\n');
 Simulation.Formation = false;
 Simulation.duration = 10;
@@ -7,6 +9,7 @@ Simulation.dt = 0.05;
 
 % Output Settings
 Simulation.plots = true;
+Simulation.GIF = false;
 
 % Animation Settings
 Simulation.life_animation = true;
@@ -16,29 +19,21 @@ Simulation.colors = {'k', 'r', 'g'};
 
 %% Define Gains
 % r-passivity
-lambda = 4;  %6           % Multiplier of z in the output (4)
-epsilon = 5e-1;         % Levenberg constant    (5e-1)
+lambda = 4;  %6         % Multiplier of z in the output (4)
 
 % Network
 gain = 1;               % Gain of the network (1)
 Kd = gain*diag([1; 1]); % Network gain as matrix (eye) 
 B = sqrt(gain)*eye(2);  % ST Line Impedance      (sqrt(gain)*eye)
 
-% Damping
-Kv = 0*eye(2);          % Dampens the response via z_dot  (0)
-
 %% Calculate the network gain
-fprintf('Loading Laplace\n');
-LaplaceScattering;
-
-%% Define systems
-fprintf('Loading Systems\n');
+fprintf('1] Loading Laplace\n');
+SetScatteringGain;
 
 %% Load a Setup
-setup();
+scenario();
 
 %% Set initial simulation parameters
-% Fun fact: Only the systems here are drawn
 Simulation.systems = SInfo;
 
 %% Define Delays
@@ -57,12 +52,8 @@ end
 
 Simulation.R = Simulation.Formation_Goal*System{1}.lambda/2;
 
-%% Validation of R
-Vr0 = 0; % Could be more extensive (but needs calculation for each agent)
-
 %% Simulation Parameters
-% Time parameters
 t_out = 0:Simulation.dt:Simulation.duration;
 set_param(model, 'StopTime', num2str(Simulation.duration))
 
-fprintf('Parameters set\n');
+fprintf('Parameters set!\n\n');

@@ -1,6 +1,9 @@
-%% Animate simulated systems
+%% Animate simulated systems %%
+% Use the option Simulation.GIFs = true to generate a GIF of the animation
 function Animate(qdata, Simulation, t_out)
     Nsteps = size(qdata.Data, 1);
+    
+    filename = ['GIFs/' Simulation.name '.gif'];
     
     % Time is slowed down by this rate
     time_rate = Simulation.time_rate;
@@ -19,7 +22,7 @@ function Animate(qdata, Simulation, t_out)
     t = t_out;
     
     %% Draw the animation
-    figure;
+    h = figure;
     waitforbuttonpress; pause(1);
     if(Simulation.life_animation)
     
@@ -34,6 +37,11 @@ function Animate(qdata, Simulation, t_out)
             woffset = [0; 0];
             xlim([woffset(1)-wsize, wsize+ woffset(1)]);
             ylim([woffset(2)-wsize, wsize+ woffset(2)]);
+            
+            if(Simulation.GIF)
+                SaveFrameToGIF(filename, h, Simulation.dt, i);
+            end
+            
             l = toc;
             pause(max(Tstep-l, 0));
         end
@@ -58,8 +66,13 @@ hold on;
             hold on;
             if(strcmp(Simulation.systems{j}.name, 'Manipulator'))
                 PlotManipulatorTrajectory(y, Simulation, j);
+            elseif(strcmp(Simulation.systems{j}.name, 'Pendulum'))
+                PlotManipulatorTrajectory(y, Simulation, j);
             else
                 plot(y(:, 1), y(:, 2), [Simulation.colors{j} '--'], 'LineWidth', 1.5);
             end
     end
+    title('Trajectories in 2D');
+    xlabel('x (m)'); ylabel('y (m)'); grid on;
+    saveMyFigure(gcf, [Simulation.name '_xy'], 20, 20);
 end

@@ -6,8 +6,8 @@ model = 'Model_3Systems';
 Simulation.Formation = true;
 
 %% Two Manipulators
-location{1} = [0.5; 0; 0];
-location{2} = [-0.5; 0; 0];
+location{1} = [1; -1.5; 0];
+location{2} = [-1; 1.5; 0];
 for i = 1 : 2
     [System{i}, SInfo{i}] = Manipulator_System(lambda, epsilon, location{i}, i);
 end

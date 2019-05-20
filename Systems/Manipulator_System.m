@@ -1,11 +1,10 @@
-function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, varargin)
+function [System, SInfo] = Manipulator_System(lambda, mbar, location, index, varargin)
     g = 9.81;
     n_link = 3;
     L = [0.5; 0.5; 0.5];
     M = [2; 2; 2];
     I = [0.05; 0.05; 0.05]; 
     
-    algorithm = 1;
     filename = ['Systems/Manipulator' num2str(n_link) '_n' num2str(index)];
 
     %% Construct a mass matrix
@@ -85,18 +84,16 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
          Psi = [Psi diff(z, q(i))];
     end
     Psi = simplify(Psi');
+    dPsi = ddt(Psi);
     
-    if(algorithm == 1)
-        dPsi = ddt(Psi);
-    else
-        dPPsi = ddt(inv(Psi'*Psi + epsilon * eye(2)) * Psi');
-    end
+    % Calculate dmomdq derivatives
+    Psi_1 = diff(Psi', q(1));Psi_2 = diff(Psi', q(2));Psi_3 = diff(Psi', q(3));
     
     %% Calculate misc matrices
     dMdt = ddt(Mm);
     Mminv = inv(Mm');
     dMinvdt = ddt(Mminv);
-    Find_drLr;
+    %Find_drLr;
     
     %% Convertions to matlabfunctions
     Mm = matlabFunction(Mm');
@@ -107,60 +104,64 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
     dV = @(q) dV(q(1), q(2), q(3));
     z = matlabFunction(z);
     z = @(q) z(q(1), q(2), q(3));
-    Psi = matlabFunction(Psi);
-    Psi = @(q) Psi(q(1), q(2), q(3));
-
     qdotM = matlabFunction(qdotM);
     System.qdotM = @(q, qdot) qdotM(q(1), q(2), q(3), qdot(1), qdot(2), qdot(3));
+    Psi = matlabFunction(Psi);
+    Psi = @(q) Psi(q(1), q(2), q(3));
+    Psi_1 = matlabFunction(Psi_1);
+    Psi_1 = @(q) Psi_1(q(1), q(2), q(3));
+    Psi_2 = matlabFunction(Psi_2);
+    Psi_2 = @(q) Psi_2(q(1), q(2), q(3));
+    Psi_3 = matlabFunction(Psi_3);
+    Psi_3 = @(q) Psi_3(q(1), q(2), q(3));
     
-    %% Define the system structure
+    %% System Matrices
     System.M = @(q) Mm(q);
     System.Minv = @(q) Mminv(q);
     System.dMdt = @(q, qdot) dMdt(q, qdot);
     System.dMinvdt = @(q, qdot) dMinvdt(q, qdot);
     System.dV = @(q) dV(q);
+    System.dHdq = @(q, qdot) System.dV(q) + 0.5*System.qdotM(q, qdot)*qdot;
     System.F = @(q) eye(3);
     System.a = @(q) z(q);
     System.Psi = @(q) Psi(q);
+    System.dPsi = @(q, qdot) dPsi(q, qdot);
     
-    if(algorithm == 1)
-        System.dPsi = @(q, qdot) dPsi(q, qdot);
-    else
-        System.dPPsi = @(q, qdot) dPPsi(q, qdot);
-    end
-    %System.drLr = @(q, qdot) drLr(q, qdot);
-    
-    % Control
+    %% Control Parameters
     System.dVs = @(q) [0; 0; 0];
-    %System.Phi = @(q) System.Psi(q);
-    
-    % r-passivity specific variables
-    System.lambda = lambda;
-    %System.epsilon = epsilon;
-    
-    %% Kv for r with psi transposed
-    if(algorithm == 1)
-       % -> Kv modifies the "matching" condition while tau does not.
-       % gain Here helps ONLY in thediscrete case!!!0.1*
-       % (Zdot | Psi'p)
-       System.r = @(q, qdot) System.Psi(q)'*qdot + System.lambda*System.a(q);
-       %System.r = @(q, qdot) System.Psi(q)'*System.M(q)*qdot + System.lambda*System.a(q);
-       
-       System.nPsi = @(q) eye(3) - pinv(System.Psi(q),1e-5)'*System.Psi(q)';
-       System.Kv = @(q, qdot) eye(3);
-       System.R = @(q, r) 0.5*r'*r;
-    end
-    %% Kv for r with psi pseudo
-    if(algorithm == 2)
-        System.Kv = @(q, qdot) lambda* System.Psi(q)*System.Psi(q)' - 0.5*System.dMdt(q, qdot)+...
-        System.Psi(q)*System.dPPsi(q, qdot)*System.M(q);
-        System.R = @(q, r) 0.5*r'*r;
-    end
+    System.nPsi = @(q) eye(3) - pinv(System.Psi(q))'*System.Psi(q)';
+    System.Kv = @(q, qdot) eye(3);
 
-    %% Discrete Data
+    %% r-passivity parameters (z_dot based)
+    System.lambda = lambda;
+    System.r = @(q, qdot) System.Psi(q)'*qdot + System.lambda*System.a(q);
+    System.rdot = @(q, qdot, p, pdot)  System.Psi(q)'*System.Minv(q)*pdot + ...
+       System.Psi(q)'*System.dMinvdt(q, qdot)*p + System.dPsi(q, qdot)'*qdot + ...
+       System.Psi(q)'*System.lambda*qdot;
+    System.R = @(q, r) 0.5*r'*r;
+    
+    %% Singularity Avoidance
+    System.mbar = mbar;
+    System.sa = 0;
+    
+    %Define dmomdq
+    System.Psimom = @(q) [trace(Psi_1(q)*pinv(Psi(q)')); ...
+        trace(Psi_2(q)*pinv(Psi(q)')); trace(Psi_3(q)*pinv(Psi(q)'))];
+    
+    % The function that maps k smoothly
+    System.kmom = @(m, mbar) 4*(4*m^3 - 9*m^2*mbar+6*mbar^2*m-mbar^3)/(mbar^3);
+   
+    %% Control Stash
+    %System.S = @(q) System.Psi(q);
+    %System.drLr = @(q, qdot) drLr(q, qdot);
+    % Psi'p variables
+    %System.r = @(q, qdot) System.S(q)'*System.M(q)*qdot + System.lambda*System.a(q);
+    %System.rdot = @(q, qdot, p, pdot) System.S(q)'*pdot + ...
+      % System.lambda*System.Psi(q)'*qdot;
+
+    %% Discrete Parameters
     System.Ts = RetrieveTs(varargin);
     
-    % Discrete time compensation
     if(System.Ts > 0)
         %% Euler
         Lv = eye(3);
@@ -172,14 +173,12 @@ function [System, SInfo] = Manipulator_System(lambda, epsilon, location, index, 
         System.dVdt = @(q, qdot) dV(q, qdot);
         System.dVsdt = @(q, qdot) [0;0;0];
     end
-
-    save(filename, 'System');
     
     %% Save system information
+    save(filename, 'System');
     SInfo.n = size(Mm(q), 1);
     SInfo.name = 'Manipulator';
     SInfo.identifier = ['Manipulator #' num2str(index)];
-    SInfo.legend = {[SInfo.name ' q1'], [SInfo.name ' q2'], [SInfo.name ' q3']};
     SInfo.location = location;
     SInfo.plotf = @PlotManipulator;
     SInfo.filename = filename;

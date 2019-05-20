@@ -1,21 +1,27 @@
+%% Main File for distributed IDA-PBC based protocol in simulink %%
+% Created by: Oscar de Groot
 clear all; clc; close all;
 
-% The simulink model this main document refers to
+%% Main definitions
+% Define the name of this simulation
+Simulation.name = '2m';
 
-sim_name = 'uav_m_shaping';
-setup = @Two_Manipulators_One_UAV;
+% Choose the scenario to run
+scenario = @Two_Manipulators;
 
-system_path = '../Systems/';
-setup_path = 'Setups/';
+% Define relevant paths
+system_path = '../Systems/';    % Path to system definitions
+scenario_path = 'Scenarios/';      % Path to scenarios
 
-% Add the systems to the path
+% Add them to the matlab path
 addpath(genpath(system_path));
-addpath(genpath(setup_path));
+addpath(genpath(scenario_path));
 
-% Load parameters
+%% Load parameters
 Parameters;
 
 %% Simulation
+fprintf('--------------------------\n');
 fprintf('Simulating...\n');
 tic;
 load_system(model)
@@ -24,31 +30,5 @@ T_Sim = toc;
 
 fprintf('Finished Simulation in %.0f seconds\n', toc);
 
-%% Plot
-if(Simulation.plots)
-    figure;
-    title('Consensus in 2D');
-    subplot(211);
-    plot(z1.Time, z1.Data, 'Linewidth', 1.5);
-    title('x');
-    xlabel('time (s)'); ylabel('Amplitude (m)'); grid on;
-    legend([{SInfo{1}.identifier} {SInfo{2}.identifier} {SInfo{3}.identifier}]);
-    subplot(212);
-    plot(z2.Time, z2.Data, 'Linewidth', 1.5);
-    title('y');
-    xlabel('time (s)'); ylabel('Amplitude (m)'); grid on;
-    legend([{SInfo{1}.identifier} {SInfo{2}.identifier} {SInfo{3}.identifier}]);
-    saveMyFigure(gcf, [sim_name '_z'], 20, 10);
-
-    figure;
-    plot(S.Time, S.Data, 'Linewidth', 1.5);
-    title('Storage function S(t)');
-    xlabel('time (s)'); ylabel('Amplitude'); grid on;
-    legend([{SInfo{1}.identifier} {SInfo{2}.identifier} {SInfo{3}.identifier}]);
-    saveMyFigure(gcf, [sim_name '_S'], 20, 10)
-end
-
+GeneratePlots;
 Animate(q, Simulation, t_out);
-title('Trajectories in 2D');
-xlabel('x (m)'); ylabel('y (m)'); grid on;
-saveMyFigure(gcf, [sim_name '_xy'], 20, 20);

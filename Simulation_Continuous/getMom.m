@@ -11,7 +11,7 @@ function [drp] = getMom(System, q, dr)
     
     drp = dr;
     
-    % If outside of the range of mbar
+    % Return if outside of the range of mbar
     if(mom > mbar)
         return
     end
@@ -21,15 +21,15 @@ function [drp] = getMom(System, q, dr)
         dmomsurface = mom*System.Psimom(q)'*pinv(System.Psi(q)');
         nm = dmomsurface'/norm(dmomsurface);
         
+        % Add the push force
+        drp = dr + System.push_gain*System.kmom(mom, mbar/2)*nm;
+        
         % Only act if the dot product is negative
         if(dr'*nm >= 0)
             return
         end
         
-        if(mom > mbar/2)
-            drp = dr - (dr'*nm)*nm*System.kmom(mom, mbar);
-        else
-            drp = dr - (dr'*nm)*nm;
-        end
+        % Add the pull force
+        drp = drp - (dr'*nm)*nm*System.kmom(mom, mbar);
     end
 end

@@ -1,5 +1,6 @@
 function SaveFrameToGIF(filename, fig, dt, index)
 % Capture the plot as an image 
+set(fig,'color','w')
 frame = getframe(fig); 
 im = frame2im(frame); 
 [imind,cm] = rgb2ind(im,256); 

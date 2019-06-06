@@ -75,4 +75,7 @@ hold on;
     title('Trajectories in 2D');
     xlabel('x (m)'); ylabel('y (m)'); grid on;
     saveMyFigure(gcf, [Simulation.name '_xy'], 20, 20);
+    if(Simulation.SavePNG)
+        saveMyFigure(gcf, [Simulation.name '_xy'], 20, 20, '.png');
+    end
 end

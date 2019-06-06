@@ -17,12 +17,19 @@ if(Simulation.plots)
     xlabel('time (s)'); ylabel('Amplitude (m)'); grid on;
     legend(system_legend)
     saveMyFigure(gcf, [Simulation.name '_z'], 20, 10);
+    if(Simulation.SavePNG)
+        saveMyFigure(gcf, [Simulation.name '_z'], 20, 10, '.png');
+    end
+
 
     %% Storage function figure
     figure;
     plot(S.Time, S.Data, 'Linewidth', 1.5);
-    title('Storage function S(t)');
+    title('Dissipation Function S(t)');
     xlabel('time (s)'); ylabel('Amplitude'); grid on;
     legend(system_legend)
     saveMyFigure(gcf, [Simulation.name '_S'], 20, 10)
+    if(Simulation.SavePNG)
+        saveMyFigure(gcf, [Simulation.name '_S'], 20, 10, '.png');
+    end
 end

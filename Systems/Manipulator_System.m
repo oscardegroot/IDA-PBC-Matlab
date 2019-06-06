@@ -1,12 +1,23 @@
-function [System, SInfo] = Manipulator_System(lambda, mbar, location, index, varargin)
+%% Varargin: Ts
+%% Parameters:
+%   Location: 3D mounting location
+%   Vs: Potential function (@(q))
+%
+function [System, SInfo] = Manipulator_System(lambda, mbar, Parameters, index, varargin)
     g = 9.81;
     n_link = 3;
-    L = [0.5; 0.5; 0.5];
-    M = [2; 2; 2];
-    I = [0.05; 0.05; 0.05]; 
+    L = 0.5*ones(n_link,1);
+    M = 2*ones(n_link,1);
+    I = 0.05*ones(n_link,1);
     
     filename = ['Systems/Manipulator' num2str(n_link) '_n' num2str(index)];
-
+    
+    if(isfield(Parameters, 'location'))
+        location = Parameters.location;
+    else
+        location = zeros(3, 1);
+    end
+    
     %% Construct a mass matrix
     % Based on convergence from energy coordinates to generalised
     % coordinates (dx/dq'*Mx*dx/dq)
@@ -61,7 +72,7 @@ function [System, SInfo] = Manipulator_System(lambda, mbar, location, index, var
     end
     
     %% Calculate the potential and cooperative coordinates
-    dV = [0; 0; 0];
+    dV = zeros(n_link, 1);
     x = 0; y = 0; gamma = 0;
     for i = 1 : n_link
         
@@ -128,7 +139,12 @@ function [System, SInfo] = Manipulator_System(lambda, mbar, location, index, var
     System.dPsi = @(q, qdot) dPsi(q, qdot);
     
     %% Control Parameters
-    System.dVs = @(q) [0; 0; 0];
+    if(isfield(Parameters, 'dVs'))
+        System.dVs = Parameters.dVs;
+    else
+        System.dVs = @(q) [0;0;0];
+    end
+    
     System.nPsi = @(q) eye(3) - pinv(System.Psi(q))'*System.Psi(q)';
     System.Kv = @(q, qdot) eye(3);
 
@@ -142,15 +158,18 @@ function [System, SInfo] = Manipulator_System(lambda, mbar, location, index, var
     
     %% Singularity Avoidance
     System.mbar = mbar;
-    System.sa = 0;
+    System.push_gain = 5;
     
     %Define dmomdq
     System.Psimom = @(q) [trace(Psi_1(q)*pinv(Psi(q)')); ...
         trace(Psi_2(q)*pinv(Psi(q)')); trace(Psi_3(q)*pinv(Psi(q)'))];
     
     % The function that maps k smoothly
-    System.kmom = @(m, mbar) 4*(4*m^3 - 9*m^2*mbar+6*mbar^2*m-mbar^3)/(mbar^3);
+    System.kmom = @(m, mbar) Calculate_kmom(m, mbar);
    
+    %% Cooperative Matrices
+    System.isLeader = false;
+    
     %% Control Stash
     %System.S = @(q) System.Psi(q);
     %System.drLr = @(q, qdot) drLr(q, qdot);
@@ -182,4 +201,6 @@ function [System, SInfo] = Manipulator_System(lambda, mbar, location, index, var
     SInfo.location = location;
     SInfo.plotf = @PlotManipulator;
     SInfo.filename = filename;
+    
+    fprintf(['    [S' num2str(index) '] Manipulator System Added\n']);
 end

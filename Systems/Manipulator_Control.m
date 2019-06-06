@@ -11,6 +11,10 @@ function [tau, tau_m, tau_fb, System] = Manipulator_Control(q, p, tau_c, index)
             - System.M(q)*(System.lambda + 1)*qdot;
     
     %tau_fb = tau_c;
+    if(System.isLeader)
+        tau_c = tau_c + System.B*(System.lambda*System.target - System.r(q, qdot));
+    end
+        
     tau_m = getMom(System, q, tau_c);
     tau_fb = tau_m - System.dPsi(q,qdot)'*qdot;
     

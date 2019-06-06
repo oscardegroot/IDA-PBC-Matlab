@@ -4,10 +4,10 @@ clear all; clc; close all;
 
 %% Main definitions
 % Define the name of this simulation
-Simulation.name = '2m';
+Simulation.name = '2m_1u';
 
 % Choose the scenario to run
-scenario = @Two_Manipulators;
+scenario = @Two_Manipulators_One_UAV;
 
 % Define relevant paths
 system_path = '../Systems/';    % Path to system definitions

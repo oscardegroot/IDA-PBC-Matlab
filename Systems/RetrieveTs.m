@@ -1,8 +1,8 @@
 function Ts = RetrieveTs(var) 
 % Set the sampling time if given (discrete)
-    if(size(var) > 0)
-        if(var{1} > 0)
-            Ts = var{1};
+    if(size(var) > 1)
+        if(var{2} > 0)
+            Ts = var{2};
         else
             error('Ts <= 0');
         end

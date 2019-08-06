@@ -6,6 +6,7 @@ Simulation.l = 2;
 model = 'Model_2Systems';
 comparison_model = 'Model_2Systems_IDA';
 Simulation.Comparison = true;
+Simulation.duration = 10;
 
 Parameters{1}.location = [0.5; 0; 0];
 Parameters{2}.location = [-0.5; 0; 0];
@@ -23,8 +24,8 @@ q02 = [-0.1;-0.2;-0.3];
 
 %% Discrete Parameters
 % Define delays
-delays_12 = getRampDelays(L, Ts, 0.2, 0.3, 1.0);
-delays_21 = getRandomDelays(L, Ts, 0.6, 0.5, 1.0);
+delays_12 = getRandomDelays(L, Ts, 0.8, 0.3, 1.0);
+delays_21 = getRandomDelays(L, Ts, 1.2, 0.5, 1.0);
 
 % Define dropouts
 dropouts_12 = getRandomDropouts(L, 0.05);

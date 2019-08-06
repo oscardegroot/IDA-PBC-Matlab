@@ -4,7 +4,7 @@
 %% Simulation Settings
 fprintf('Setting Parameters\n');
 Simulation.Formation = false;
-Simulation.duration = 10;
+Simulation.duration = 20;
 Simulation.dt = 0.05;
 
 % Output Settings
@@ -39,9 +39,10 @@ scenario();
 Simulation.systems = SInfo;
 
 %% Define Delays
-T = 0.1;
-T12 = T;
-T21 = T*5;
+T = 0.05;
+T12 = T;T21 = 2*T;
+%T21 = T*5;
+
 T23 = T*3;
 T32 = T*2;
 

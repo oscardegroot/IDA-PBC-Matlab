@@ -4,10 +4,10 @@ clear all; clc; close all;
 
 %% Main definitions
 % Define the name of this simulation
-Simulation.name = 'discrete_2m_wvm';
+Simulation.name = '2m_Opt';
 
 % Choose the scenario to run
-scenario = @Two_Manipulators;
+scenario = @Two_Manipulators_Opt;
 
 % Define relevant paths
 system_path = '../Systems/';    % Path to system definitions
@@ -25,8 +25,12 @@ sim_model = model;
 RunSimulation;
 
 if(Simulation.Comparison)
+    Sim1.q = q; Sim1.IW = Input_Waves; Sim1.OW = Output_Waves; Sim1.S = S;
+    Sim1.z1 = z1; Sim1.z2 = z2;
     sim_model = comparison_model;
     RunSimulation;
+    Sim2.q = q; Sim2.IW = Input_Waves; Sim2.OW = Output_Waves; Sim2.S = S;
+    Sim2.z1 = z1; Sim2.z2 = z2;
 end
 
 % If this is a comparison, compare the responses

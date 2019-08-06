@@ -1,6 +1,6 @@
 function [V, Vdot] = UAV_R(q, qdot, p, pdot, r, index)
 
-    load(['Systems/uav_n' num2str(index)], 'System');
+    load(['Systems/Uav_n' num2str(index)], 'System');
     
     qddot = pdot;
     

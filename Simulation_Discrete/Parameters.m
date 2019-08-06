@@ -7,13 +7,13 @@ Simulation.duration = 10;
 
 % Output Settings
 Simulation.plots = true;
-Simulation.SavePNG = true;
-Simulation.GIF = true;
+Simulation.SavePNG = false;
+Simulation.GIF = false;
 Simulation.ShowWaves = true;
 
 % Delay settings
-Simulation.delay_is_variable = true;
-Simulation.dropouts = true;
+Simulation.delay_is_variable = false;
+Simulation.dropouts = false;
 
 % Animation Settings
 Simulation.life_animation = true;
@@ -23,7 +23,7 @@ Simulation.colors = {'k', 'r', 'g'};
 
 %% Discrete time parameters
 % Sampling time
-Ts = 0.05; Simulation.Ts = Ts;
+Ts = 0.01; Simulation.Ts = Ts;
 Simulation.dt = Ts/2;
 
 % Default Constant Delays
@@ -77,6 +77,6 @@ Simulation.R = Simulation.Formation_Goal*System{1}.lambda/2;
 %% Simulation Parameters
 % Time parameters
 t_out = 0:Simulation.dt:Simulation.duration;
-set_param(model, 'StopTime', num2str(Simulation.duration))
+
 
 fprintf('Parameters set!\n');

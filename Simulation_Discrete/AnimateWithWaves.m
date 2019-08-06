@@ -115,8 +115,8 @@ subplot(2,2,[1,3]);
     end
     title('Trajectories in 2D');
     xlabel('x (m)'); ylabel('y (m)'); grid on;
-    saveMyFigure(gcf, [Simulation.name '_xy'], 20, 20);
+    saveMyFigure(gcf, [Simulation.name '_xy'], 40, 20);
     if(Simulation.SavePNG)
-        saveMyFigure(gcf, [Simulation.name '_xy'], 20, 20, '.png');
+        saveMyFigure(gcf, [Simulation.name '_xy'], 40, 20, '.png');
     end
 end

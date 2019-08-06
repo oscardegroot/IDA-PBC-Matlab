@@ -4,10 +4,10 @@ clear all; clc; close all;
 
 %% Main definitions
 % Define the name of this simulation
-Simulation.name = '2m_1u';
+Simulation.name = 'drive_init';
 
 % Choose the scenario to run
-scenario = @Two_Manipulators_One_UAV;
+scenario = @Two_Drives;
 
 % Define relevant paths
 system_path = '../Systems/';    % Path to system definitions

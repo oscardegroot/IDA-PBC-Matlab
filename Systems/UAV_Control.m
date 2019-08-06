@@ -1,42 +1,36 @@
-function [tau, tau_fb, System] = UAV_Control(q, p, index)
+function [tau, tau_fb, matching, System] = UAV_Control(q, p, index)
 
     load(['Systems/UAV_n' num2str(index)]);
     qdot = System.Minv(q)*p;
     
     %% [Main Scheme] Direct Scheme Control zdot
-    tau = inv(System.F(q)'*System.F(q))*System.F(q)'*(System.dV(q) ...
-        - System.nPsi(q)'*System.dVs(q))...   
-        - System.Kv(q)*System.F(q)'*qdot;
-    
-    tau_fb = -(System.dPsi(q,qdot)'*qdot + (System.lambda + System.gamma)*System.Psi(q)'*qdot)...
-           + System.Psi(q)'*System.F(q)*System.Kv(q)*System.F(q)'*qdot;
+%     tau = inv(System.F(q)'*System.F(q))*System.F(q)'*(System.dV(q) ...
+%         - System.nPsi(q)'*System.dVs(q))...   
+%         - System.Kv(q)*System.F(q)'*qdot;
+%     
+%     tau_fb = -(System.dPsi(q,qdot)'*qdot + (System.lambda + System.gamma)*System.Psi(q)'*qdot)...
+%            + System.Psi(q)'*System.F(q)*System.Kv(q)*System.F(q)'*qdot;
 
 
     %% Accurate local matching
+    tau = inv(System.F(q)'*System.F(q))*System.F(q)'*(System.dV(q) ...
+        - System.nPsi(q)'*System.dVs(q) -...
+        System.F(q)*System.Kv(q)*System.F(q)'*p);
+    
+    tau_fb = -System.dPsi(q,qdot)'*qdot - (System.lambda + System.gamma)*System.Psi(q)'*qdot...
+        + System.Psi(q)'*inv(System.M(q)) * System.F(q)*System.Kv(q)*System.F(q)'*p;
+
+    matching = System.Fp(q)*(System.dV(q) ...
+        - System.nPsi(q)'*System.dVs(q) -...
+        System.F(q)*System.Kv(q)*System.F(q)'*p + System.Fd(q)*tau_fb);
+    %% Local Passivity + Cooperative Passivity Approach
+%     tau_l = -7*eye(1)*System.annPsi(q)*qdot - System.anndPsi(q, qdot)*qdot- System.dq3dt(q) * System.dVs(q);%System.annPsi(q)*
+%     
 %     tau = inv(System.F(q)'*System.F(q))*System.F(q)'*(System.dV(q) ...
-%         - pinv(System.annPsi(q))*(System.anndPsi(q, qdot)*qdot)...
-%         - (System.lambda+System.gamma)*qdot - System.dVs(q));
+%         + System.Ft(q)*tau_l);
 %     
-%     tau_fb = -(System.dPsi(q,qdot)'*qdot) + System.Psi(q)'*System.dVs(q);% + (System.lambda + System.gamma)*System.Psi(q)'*qdot);%...
-        
-    
-    %% Altered Tau_fb scheme (Mas problemas)
-%     Fn = (eye(3) - System.Fd(q)*System.Psi(q)');
-%     tau = inv(System.F(q)'*System.F(q))*System.F(q)'*(...
-%         System.dV(q) - Fn*(System.Md(q)*System.dVs(q))...% + System.Md(q)*System.Psi(q)*System.Kv(q)*System.Psi(q)'*qdot));%...
-%         - System.annPsi(q)*System.F(q)*System.Kv(q)*System.F(q)'*System.annPsi(q)'*qdot);
-%     
-%     tau_fb = -System.Kc(q, qdot)*qdot;%...
-        %+System.Kv(q)*System.Fd(q)'*qdot;
-    
-    %det(System.Md(q))
-    %System.Fp(q)*(System.dV(q) + System.Fd(q)*tau_fb - System.nPsi(q)*System.dVs(q))
-    % Dit is 0 aka de damping wordt volledig verwijdert momenteel
-    %- System.F(q)*System.Kv(q)*System.F(q)'*qdot + System.Fd(q)*System.Psi(q)'*System.F(q)*System.Kv(q)*System.F(q)'*qdot
-    %System.Fd(q)*System.Psi(q)' % Deze is NIET gelijk aan I
-   %- System.F(q)*System.Kv(q)*System.F(q)'*qdot+System.Psi(q)'*(eye(3) - System.Psi(q)*pinv(System.Psi(q)))*System.F(q)*System.Kv(q)*System.F(q)'*qdot % Deze heeft gewoon een waarde
-  % Condition number is 1
-   %(eye(3) - System.Fd(q)*System.Psi(q)')*System.Psi(q)
+%     tau_fb = -(System.dPsi(q,qdot)'*qdot + (System.lambda + System.gamma)*System.Psi(q)'*qdot);
+
     %% LUT Based
     % load('Systems/UAV_n1_LUT');
     % qdot = p; % Because M = I!!!

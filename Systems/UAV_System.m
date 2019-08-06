@@ -22,25 +22,37 @@ function [System, SInfo] = UAV_System(lambda, index, varargin)
     System.Fp = @(q) [cos(q(3)) sin(q(3)) -e];
     System.dHdq = @(q) System.dV(q);
     %% No null space, but Md
-%     System.a = @(q) q(1:2) - 1/g3 * [k3*sin(q(3)); (k3-k1*e)*(1-cos(q(3)))];
-%     System.Psi = @(q) [eye(2); [-k3/g3*cos(q(3)) -(k3-k1*e)/g3*sin(q(3))]];
-%     System.annPsi = @(q) [k3/g3*cos(q(3)) (k3-k1*e)/g3*sin(q(3)) 1];
-%     System.dPsi = @(q, qdot) [zeros(2, 2); [k3/g3*sin(q(3))*qdot(3) -(k3-k1*e)/g3*cos(q(3))*qdot(3)]];
-%     System.Md = @(q) [k1*e*(cos(q(3)))^2 + k3 k1*e*cos(q(3))*sin(q(3)) k1*cos(q(3));...
-%                       k1*e*cos(q(3))*sin(q(3)) -k1*e*(cos(q(3)))^2+k3 k1*sin(q(3));...
-%                       k1*cos(q(3)) k1*sin(q(3)) k2];
-%     System.dVs = @(q) [0; 0; g/g3*sin(q(3))];
+    System.a = @(q) q(1:2) - 1/g3 * [k3*sin(q(3)); (k3-k1*e)*(1-cos(q(3)))];
+    System.Psi = @(q) [eye(2); [-k3/g3*cos(q(3)) -(k3-k1*e)/g3*sin(q(3))]];
+    System.annPsi = @(q) [k3/g3*cos(q(3)) (k3-k1*e)/g3*sin(q(3)) 1];
+    System.dPsi = @(q, qdot) [zeros(2, 2); [k3/g3*sin(q(3))*qdot(3) -(k3-k1*e)/g3*cos(q(3))*qdot(3)]];
+    System.Md = @(q) [k1*e*(cos(q(3)))^2 + k3 k1*e*cos(q(3))*sin(q(3)) k1*cos(q(3));...
+                      k1*e*cos(q(3))*sin(q(3)) -k1*e*(cos(q(3)))^2+k3 k1*sin(q(3));...
+                      k1*cos(q(3)) k1*sin(q(3)) k2];
+    System.dVs = @(q) [0; 0; g/g3*sin(q(3))];
     %% Mapped Potential
-    a = 0.45;
-    k3 = (a/e + a/e*sqrt(1 - 4*e/a))/2;
-    System.a = @(q) q(1:2) + [-a/k3*sin(q(3)); a/k3*(cos(q(3)) - 1)];
-    System.Psi = @(q) [eye(2); [-a/k3*cos(q(3)) -a/k3*sin(q(3))]];
-    System.dPsi = @(q, qdot) [zeros(2,2); [a/k3*sin(q(3))*qdot(3) -a/k3*cos(q(3))*qdot(3)]];
-    System.annPsi = @(q) [a*cos(q(3)) a*sin(q(3)) k3];
-    System.anndPsi = @(q, qdot) [-a*sin(q(3))*qdot(3) a*cos(q(3))*qdot(3) 0];
-    System.dVs = @(q) [0; 0; (g/a)*sin(q(3))];
+%     a = 0.45;
+%     k3 = (a/e + a/e*sqrt(1 - 4*e/a))/2;
+%     System.a = @(q) q(1:2) + [-a/k3*sin(q(3)); a/k3*(cos(q(3)) - 1)];
+%     %System.t = @(q) a*[cos(q(3)) sin(q(3))]*q(1:2) + k3*q(3);
+%     System.Psi = @(q) [eye(2); [-a/k3*cos(q(3)) -a/k3*sin(q(3))]];
+%     System.dPsi = @(q, qdot) [zeros(2,2); [a/k3*sin(q(3))*qdot(3) -a/k3*cos(q(3))*qdot(3)]];
+%     System.annPsi = @(q) [a*cos(q(3)) a*sin(q(3)) k3];
+%     System.anndPsi = @(q, qdot) [-a*sin(q(3))*qdot(3) a*cos(q(3))*qdot(3) 0];
+%     System.dVs = @(q) [0; 0; (g/a)*sin(q(3))];
+    %System.Md = @(q) diag([1 1 -k3/(e*a)]);
+    %b1 = 4.06; b2 = 1; b3 = 1;
+    %System.Md = @(q) [b1*e*(cos(q(3)))^2 + b3 b1*e*cos(q(3))*sin(q(3)) b1*cos(q(3));...
+    %              b1*e*cos(q(3))*sin(q(3)) -b1*e*(cos(q(3)))^2+b3 b1*sin(q(3));...
+    %              b1*cos(q(3)) b1*sin(q(3)) b2];
+    %DeriveMd;
+    %System.dq3dt = @(q) 5*[0 0 1/(System.annPsi(q)*[0; 0; 1])];
+    %System.dVs = @(q) k3*sin(System.t(q));%[0; 0; -System.t(q)];
+% 
     System.nPsi = @(q) System.annPsi(q)'*System.annPsi(q);
-    System.Md = @(q) eye(3);
+%     %System.Ft = @(q) (eye(3) - pinv(System.Psi(q)')*System.Psi(q)')*System.annPsi(q)'*inv(System.annPsi(q)*(eye(3) - pinv(System.Psi(q)')*System.Psi(q)')*System.annPsi(q)');
+%     System.Ft = @(q) System.annPsi(q)'*inv(System.annPsi(q)*System.annPsi(q)');
+%     System.Md = @(q) eye(3);
     %% R-passivity components
     System.lambda = lambda; 
     System.dMinvdt = @(q,qdot)zeros(3,3);

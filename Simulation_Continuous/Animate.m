@@ -23,7 +23,7 @@ function Animate(qdata, Simulation, t_out)
     
     %% Draw the animation
     h = figure;
-    waitforbuttonpress; pause(1);
+    waitforbuttonpress; pause(0.2);
     if(Simulation.life_animation)
     
         for i = 1 : Nsteps
@@ -50,17 +50,20 @@ function Animate(qdata, Simulation, t_out)
    
 %% Trajectories
 hold on;
+%Start
     for j = 1 : Simulation.N
         y = y_all{j};
-        Simulation.systems{j}.plotf(y(1, :), Simulation.colors{j}, Simulation.systems{j});
+        Simulation.systems{j}.plotf(y(1, :), Simulation.colors{j}, Simulation.systems{j}, [0,0,0]+0.4, '-');
         hold on;
     end
+% End
     for j = 1 : Simulation.N
         y = y_all{j};
         
         Simulation.systems{j}.plotf(y(end, :), Simulation.colors{j}, Simulation.systems{j});
         hold on;
     end
+% In between
     for j = 1 : Simulation.N
             y = y_all{j};
             hold on;
@@ -72,8 +75,12 @@ hold on;
                 plot(y(:, 1), y(:, 2), [Simulation.colors{j} '--'], 'LineWidth', 1.5);
             end
     end
-    title('Trajectories in 2D');
+    title('');
     xlabel('x (m)'); ylabel('y (m)'); grid on;
+    set(gca,'FontSize',20)
+    ax = gca;
+    ax.XRuler.Axle.LineWidth = 2;
+    ax.YRuler.Axle.LineWidth = 2;
     saveMyFigure(gcf, [Simulation.name '_xy'], 20, 20);
     if(Simulation.SavePNG)
         saveMyFigure(gcf, [Simulation.name '_xy'], 20, 20, '.png');

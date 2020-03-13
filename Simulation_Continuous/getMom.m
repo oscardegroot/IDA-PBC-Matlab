@@ -1,9 +1,10 @@
-function [drp] = getMom(System, q, dr)
+function [drp] = getMom(index, q, dr)
 
-    mbar = System.mbar;
+    index = num2str(index);
+    mbar = 0.3;
 
     %% Calculate Mom
-    S = svd(System.Psi(q));
+    S = svd(feval(['Psi' index], q));
     mom = 1;
     for i = 1 : numel(S)
         mom = mom*abs(S(i));
@@ -18,11 +19,12 @@ function [drp] = getMom(System, q, dr)
 
     %% Calculate the surface and project dr
     if(mom <= mbar)
-        dmomsurface = mom*System.Psimom(q)'*pinv(System.Psi(q)');
+        dmomsurface = mom*feval(['Psimom' index], q)'*...
+            pinv(feval(['Psi', index], q)');
         nm = dmomsurface'/norm(dmomsurface);
         
         % Add the push force
-        drp = dr + System.push_gain*System.kmom(mom, mbar/2)*nm;
+        drp = dr + 5.0*Calculate_kmom(mom, mbar/2)*nm;
         
         % Only act if the dot product is negative
         if(dr'*nm >= 0)
@@ -30,6 +32,6 @@ function [drp] = getMom(System, q, dr)
         end
         
         % Add the pull force
-        drp = drp - (dr'*nm)*nm*System.kmom(mom, mbar);
+        drp = drp - (dr'*nm)*nm*Calculate_kmom(mom, mbar/2);
     end
 end

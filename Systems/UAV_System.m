@@ -21,15 +21,39 @@ function [System, SInfo] = UAV_System(lambda, index, varargin)
     System.F = @(q) [eye(2); [1/e*cos(q(3)) 1/e*sin(q(3))]];
     System.Fp = @(q) [cos(q(3)) sin(q(3)) -e];
     System.dHdq = @(q) System.dV(q);
-    %% No null space, but Md
+    
+    %% IDA-PBC
     System.a = @(q) q(1:2) - 1/g3 * [k3*sin(q(3)); (k3-k1*e)*(1-cos(q(3)))];
     System.Psi = @(q) [eye(2); [-k3/g3*cos(q(3)) -(k3-k1*e)/g3*sin(q(3))]];
-    System.annPsi = @(q) [k3/g3*cos(q(3)) (k3-k1*e)/g3*sin(q(3)) 1];
     System.dPsi = @(q, qdot) [zeros(2, 2); [k3/g3*sin(q(3))*qdot(3) -(k3-k1*e)/g3*cos(q(3))*qdot(3)]];
+    
+    %Control
     System.Md = @(q) [k1*e*(cos(q(3)))^2 + k3 k1*e*cos(q(3))*sin(q(3)) k1*cos(q(3));...
                       k1*e*cos(q(3))*sin(q(3)) -k1*e*(cos(q(3)))^2+k3 k1*sin(q(3));...
                       k1*cos(q(3)) k1*sin(q(3)) k2];
+    Find_dMdq;
+    System.dMd_dq = dMd_dq;   
+
+    J1 = @(q, p) p'*inv(System.Md(q)) * [-2*e*cos(q(3)); 2*e*sin(q(3)); 1];
+    J2 = @(q, p) p'*inv(System.Md(q)) * [0; 1; 0];
+    J3 = @(q, p) p'*inv(System.Md(q)) * [-1; 0; 0];
+    System.J = @(q, p) -k1*g3/2*[0 J1(q, p) J2(q, p); -J1(q, p) 0 J3(q, p); -J2(q, p) -J3(q, p) 0];
     System.dVs = @(q) [0; 0; g/g3*sin(q(3))];
+    System.Kv = @(q) zeros(2);%pinv(System.F(q))*System.Md(q)*pinv(System.F(q)');
+    System.Fd = @(q) System.Md(q)*System.Psi(q)*inv(System.Psi(q)'*System.Psi(q));
+
+    %System.Phi = @(q) (System.F(q)'*System.F(q))*System.F(q)'*System.Md(q)*inv(System.M(q))*System.Psi(q);
+    
+    
+    %% No null space, but Md
+%     System.a = @(q) q(1:2) - 1/g3 * [k3*sin(q(3)); (k3-k1*e)*(1-cos(q(3)))];
+%     System.Psi = @(q) [eye(2); [-k3/g3*cos(q(3)) -(k3-k1*e)/g3*sin(q(3))]];
+%     System.annPsi = @(q) [k3/g3*cos(q(3)) (k3-k1*e)/g3*sin(q(3)) 1];
+%     System.dPsi = @(q, qdot) [zeros(2, 2); [k3/g3*sin(q(3))*qdot(3) -(k3-k1*e)/g3*cos(q(3))*qdot(3)]];
+%     System.Md = @(q) [k1*e*(cos(q(3)))^2 + k3 k1*e*cos(q(3))*sin(q(3)) k1*cos(q(3));...
+%                       k1*e*cos(q(3))*sin(q(3)) -k1*e*(cos(q(3)))^2+k3 k1*sin(q(3));...
+%                       k1*cos(q(3)) k1*sin(q(3)) k2];
+%     System.dVs = @(q) [0; 0; g/g3*sin(q(3))];
     %% Mapped Potential
 %     a = 0.45;
 %     k3 = (a/e + a/e*sqrt(1 - 4*e/a))/2;
@@ -66,39 +90,17 @@ function [System, SInfo] = UAV_System(lambda, index, varargin)
     % Scale determinant to 1?
     %System.Md = @(q) System.Ml(q);
     %System.Md = @(q) [a/k3 0 l*cos(q(3)); 0 a/k3 l*sin(q(3)); 0  0 (l-1)/e];
-    System.Fd = @(q) System.Md(q)*System.Psi(q)*inv(...
-       System.Psi(q)'*System.Md(q)*System.Psi(q)); % Matching holds, but doesn't work
+    %System.Fd = @(q) System.Md(q)*System.Psi(q)*inv(...
+    %   System.Psi(q)'*System.Md(q)*System.Psi(q)); % Matching holds, but doesn't work
+    
     System.gamma = 1;
     System.Kc = @(q, qdot) System.dPsi(q, qdot)' + ...
         System.Psi(q)'*(System.lambda + System.gamma);
     
     % Local Damping
-    System.Kv = @(q) eye(2);
+    %System.Kv = @(q) eye(2);
 
-%     %% IDA-PBC
-%     System.a = @(q) q(1:2) - 1/g3 * [k3*sin(q(3)); (k3-k1*e)*(1-cos(q(3)))];
-%     System.Psi = @(q) [eye(2); [-k3/g3*cos(q(3)) -(k3-k1*e)/g3*sin(q(3))]];
-%     System.dPsi = @(q, qdot) [zeros(2, 2); [k3/g3*sin(q(3))*qdot(3) -(k3-k1*e)/g3*cos(q(3))*qdot(3)]];
-%     System.Md = @(q) [k1*e*(cos(q(3)))^2 + k3 k1*e*cos(q(3))*sin(q(3)) k1*cos(q(3));...
-%                       k1*e*cos(q(3))*sin(q(3)) -k1*e*(cos(q(3)))^2+k3 k1*sin(q(3));...
-%                       k1*cos(q(3)) k1*sin(q(3)) k2];
-%     Find_dMdq;
-%     System.dMd_dq = dMd_dq;   
-% 
-%     J1 = @(q, p) p'*inv(System.Md(q)) * [-2*e*cos(q(3)); 2*e*sin(q(3)); 1];
-%     J2 = @(q, p) p'*inv(System.Md(q)) * [0; 1; 0];
-%     J3 = @(q, p) p'*inv(System.Md(q)) * [-1; 0; 0];
-%     System.J = @(q, p) -k1*g3/2*[0 J1(q, p) J2(q, p); -J1(q, p) 0 J3(q, p); -J2(q, p) -J3(q, p) 0];
-%     System.dVs = @(q) [0; 0; g/g3*sin(q(3))];
-%     
-%     % Ml protocol
-%     System.Ml = @(q) pinv(System.Psi(q))*System.M(q)*inv(System.Md(q))*System.M(q)*pinv(System.Psi(q))';
-%     q = sym('q', [3, 1]);
-%     dMldt = ddt(System.Ml(q));
-%     System.dMldt = @(q, qdot) dMldt(q, qdot);
-    
-
-    % Discrete time compensation
+    %% Discrete time compensation
     if(System.Ts > 0)
         Lv = @(q) eye(3);
         kappa = 0;

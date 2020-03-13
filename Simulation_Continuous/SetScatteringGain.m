@@ -4,8 +4,10 @@
 TL = [-inv(B)*sqrt(2) -inv(B)^2; -eye(2) -inv(B)*sqrt(2)];
 TR = [inv(B)*sqrt(2) -inv(B)^2; -eye(2) inv(B)*sqrt(2)];
 
+%WVML = [1/(sqrt(2)) -0];
+
 % Calculate the transfer function (which is a gain)
-s = tf('s');
+%s = tf('s');
 H_L1 = inv(eye(2)- Kd*TL(1:2, 3:4))*Kd;
 H_R1 = inv(eye(2)- Kd*TR(1:2, 3:4))*Kd;
 

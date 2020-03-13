@@ -4,13 +4,13 @@ clear all; clc; close all;
 
 %% Main definitions
 % Define the name of this simulation
-Simulation.name = 'drive_init';
+Simulation.name = 'Presentation_pendulum_pbc';
 
 % Choose the scenario to run
-scenario = @Two_Drives;
+scenario = @Pendulum;
 
 % Define relevant paths
-system_path = '../Systems/';    % Path to system definitions
+system_path = 'Systems/';    % Path to system definitions
 scenario_path = 'Scenarios/';      % Path to scenarios
 
 % Add them to the matlab path

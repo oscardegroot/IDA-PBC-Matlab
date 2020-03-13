@@ -9,44 +9,44 @@ function [System, SInfo] = Drive_System(lambda, index, varargin)
     filename = ['Systems/Drive_n' num2str(index)];
     
     % System
-    System.M = @(q) [m 0 0; 0 m 0; 0 0 I];
-    System.S = @(q) [cos(q(3)) 0; sin(q(3)) 0; 0 1];
+    System.M = @(q) eye(2);
+    %System.S = @(q) [cos(q(3)) 0; sin(q(3)) 0; 0 1];
     %System.MSinv = @(q) inv(System.S(q)'*System.M(q)*System.S(q));
     System.Minv = @(q) inv(System.M(q));
-    System.n = 3;
+    System.n = 2;
     System.name = 'Differential Drive';
-    System.dV = @(q) [0;0;0];
-    System.F = @(q) [cos(q(3)) 0; sin(q(3)) 0; 0 1];
-    System.A = @(q) [sin(q(3)); -cos(q(3)); 0];
+    System.dV = @(q) [0;0];
+    System.F = @(q) eye(2);%@(q) [cos(q(3)) 0; sin(q(3)) 0; 0 1];
+    %System.A = @(q) [sin(q(3)); -cos(q(3)); 0];
     
-    System.Fp = @(q) [sin(q(3)) -cos(q(3)) 0];
+    %System.Fp = @(q) [sin(q(3)) -cos(q(3)) 0];
     System.dHdq = @(q) 0;
     %% No null space, but Md
-    e = 0.05;
-    System.a = @(q) q(1:2) + e*[cos(q(3)); sin(q(3))];
-    System.Psi = @(q) [eye(2); [-e*sin(q(3)) e*cos(q(3))]];
-    %System.a = @(q) [cos(q(3))*q(1) + sin(q(3))*q(2); q(3)];
-    %System.Psi = @(q) System.S(q);
-    System.dVs = @(q) [0; 0; 0];%[5*(q(1) - 2); 5*(q(2) - 3); 0];
+    %e = 0.05;
+    %System.a = @(q) q(1:2) + e*[cos(q(3)); sin(q(3))];
+    %System.Psi = @(q) [eye(2); [-e*sin(q(3)) e*cos(q(3))]];
+    System.a = @(q) q(1:2);
+    System.Psi = @(q) eye(2);
+    System.dVs = @(q) [0; 0];%[5*(q(1) - 2); 5*(q(2) - 3); 0];
 
-    System.nPsi = @(q) System.annPsi(q)'*System.annPsi(q);
+    %System.nPsi = @(q) System.annPsi(q)'*System.annPsi(q);
     
     %% R-passivity components
     System.lambda = lambda; 
-    System.dMinvdt = @(q,qdot)zeros(3,3);
-    System.qdotM = @(q,qdot) zeros(3, 3);
+    %System.dMinvdt = @(q,qdot)zeros(3,3);
+    %System.qdotM = @(q,qdot) zeros(3, 3);
     % System r-passivity
     System.r = @(q, qdot) System.Psi(q)'*qdot + System.lambda*System.a(q);
     System.R = @(q, r) 0.5*r'*r;
     System.gamma = 1;
 
-    System.Fd = @(q) System.S(q)'*pinv(System.Psi(q)');
+    System.Fd = @(q) System.Psi(q);%System.S(q)'*pinv(System.Psi(q)');
     System.gamma = 1;
     System.Kc = @(q, qdot) System.dPsi(q, qdot)' + ...
         System.Psi(q)'*(System.lambda + System.gamma);
     
     % Local Damping
-    System.Kv = @(q) [0.01 0; 0.05 0.1];
+    System.Kv = @(q) eye(2);
 
     % Discrete time compensation
     if(System.Ts > 0)
@@ -59,7 +59,7 @@ function [System, SInfo] = Drive_System(lambda, index, varargin)
     
     %SolveForLv;
     %% Define info for this system
-    SInfo.n = 3;
+    SInfo.n = 2;
     SInfo.name = 'Differential Drive';
     SInfo.identifier = [SInfo.name ' #' num2str(index)];
     SInfo.legend = {[SInfo.name ' x'], [SInfo.name ' y'], [SInfo.name ' \theta']};

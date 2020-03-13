@@ -1,4 +1,4 @@
-function PlotPendulum(y, S, SInfo)
+function PlotPendulum(y, S, SInfo, varargin)
     
     for i = 1 : numel(y)
         plot([0 SInfo.l*sin(y(1))], [0 SInfo.l*cos(y(1))], 'LineWidth', 1.5);

@@ -4,7 +4,7 @@
 %% Simulation Settings
 fprintf('Setting Parameters\n');
 Simulation.Formation = false;
-Simulation.duration = 20;
+Simulation.duration = 10;
 Simulation.dt = 0.05;
 
 % Output Settings
@@ -16,14 +16,14 @@ Simulation.GIF = true;
 Simulation.life_animation = true;
 Simulation.time_rate = 1;
 Simulation.window_size = 2;
-Simulation.colors = {'k', 'r', 'g'};
+Simulation.colors = {'b', 'r', 'g'};
 
 %% Define Gains
 % r-passivity
-lambda = 14;  %6         % Multiplier of z in the output (4)
+lambda = 1;  %6         % Multiplier of z in the output (4)
 
 % Network
-gain = 1;               % Gain of the network (1)
+gain = 5.0;               % Gain of the network (1)
 Kd = gain*diag([1; 1]); % Network gain as matrix (eye) 
 B = sqrt(gain)*eye(2);  % ST Line Impedance      (sqrt(gain)*eye)
 
@@ -39,11 +39,11 @@ scenario();
 Simulation.systems = SInfo;
 
 %% Define Delays
-T = 0.05;
+T =0.2;
 T12 = T;T21 = 2*T;
 %T21 = T*5;
 
-T23 = T*3;
+T23 = T*1.5;
 T32 = T*2;
 
 %% Define a formation if necessary

@@ -2,3 +2,8 @@
 *.slxc
 *.asv
 *.autosave
+Simulation_Continuous/Figures/
+Simulation_Discrete/Figures/
+*.eps
+*.png
+*.gif

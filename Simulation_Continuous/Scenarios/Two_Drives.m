@@ -16,5 +16,5 @@ end
 % Initial conditions
 q01 = zeros(SInfo{1}.n, 1); p01 = zeros(SInfo{1}.n, 1);
 q02 = zeros(SInfo{2}.n, 1); p02 = zeros(SInfo{2}.n, 1);
-q01 = [1.0; 0.5; 0.2];
-q02 = [-0.8;-0.3;-0.3];
+q01 = [1.0; 0.5];
+q02 = [-0.8;-0.3];

@@ -4,7 +4,7 @@ function [qdot, pdot] = Drive_Dynamics(q, p, tau_l, tau_c, index)
     
     qdot = System.Minv(q)*p;
    % pdot = System.F(q)*tau_l + [System.Fd(q)*tau_c; 0];
-    pdot = System.F(q)*tau_l + System.F(q)*System.Fd(q)*tau_c;
+    pdot = tau_l + System.Fd(q)*tau_c;
 end
 
 
